@@ -1,0 +1,226 @@
+body {
+            width: 400px;
+            height: 800px; /* Set default height */
+            background-color: #212529;
+            color: #f8f9fa;
+            min-width: 350px;
+            min-height: 400px;
+            max-width: 800px;
+            max-height: 900px;
+            position: relative;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #main-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .bg-dark-custom { background-color: #1a1d20; }
+        .bg-secondary-custom { background-color: #2d3238; }
+        .text-muted-custom { color: #6c757d; }
+        .border-dark-custom { border-color: #495057; }
+        .scrollable-table { max-height: 300px; overflow-y: auto; }
+        .btn-sm-custom { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+        
+        /* Resizable columns */
+        .resizable-table { display: table; width: 100%; table-layout: fixed; }
+        .table-header { display: table-header-group; }
+        .table-body { display: table-row-group; }
+        .table-row { display: table-row; }
+        .table-cell { 
+            display: table-cell; 
+            padding: 0.5rem; 
+            vertical-align: middle; 
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: clip;
+            min-width: 0;
+        }
+        .col-id { width: 60px; min-width: 40px; }
+        .col-name { width: calc(100% - 140px); min-width: 100px; }
+        .col-type { width: 80px; min-width: 60px; }
+        
+        .games-container {
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+        
+        .games-table {
+            min-width: 300px;
+            width: 100%;
+        }
+        
+        /* Quick games styling */
+        .quick-game-row:hover {
+            background-color: rgba(108, 117, 125, 0.2);
+        }
+        
+        .game-row:hover {
+            background-color: rgba(108, 117, 125, 0.2);
+        }
+        
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            cursor: col-resize;
+            background: transparent;
+        }
+        .resize-handle:hover {
+            background: #6c757d;
+        }
+ 
+ #folderPath {
+                color: #f8f9fa !important;
+                caret-color: #f8f9fa !important;
+                background-color: #2d3238 !important;
+              }
+              #folderPath:focus {
+                color: #f8f9fa !important;
+                background-color: #2d3238 !important;
+                border-color: #495057 !important;
+                box-shadow: 0 0 0 0.2rem rgba(153, 166, 177, 0.25) !important;
+              }
+              #folderPath::placeholder {
+                color: #8c98a3 !important;
+                opacity: 1;
+              }
+
+/* Resize handle for bottom-right corner */
+.resize-handle-corner {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 25px;
+    height: 25px;
+    cursor: nwse-resize;
+    z-index: 10000;
+    background: linear-gradient(-45deg, #0dcaf0 17px, transparent 17px);
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.resize-handle-corner:active {
+    background: linear-gradient(-45deg, #ff6b6b 17px, transparent 17px);
+    opacity: 1;
+}
+
+/* Horizontal resizer for panels */
+.horizontal-resizer {
+    height: 6px;
+    cursor: ns-resize;
+    background-color: #495057;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.horizontal-resizer:hover {
+    background-color: #6c757d;
+}
+
+.horizontal-resizer:active,
+.horizontal-resizer.resizing {
+    background-color: #8c98a3;
+}
+
+.resizer-line {
+    width: 50px;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 1px;
+    transition: all 0.2s ease;
+}
+
+.horizontal-resizer:hover .resizer-line {
+    width: 70px;
+    background-color: #ffffff;
+}
+
+.horizontal-resizer:active .resizer-line,
+.horizontal-resizer.resizing .resizer-line {
+    width: 80px;
+    background-color: #ffffff;
+}
+
+/* Ensure panels resize properly */
+#quickGamesSection {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+#gamesSection {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow: hidden;
+    min-height: 150px;
+}
+
+/* Minimalist down arrow button */
+#downBtn {
+  transition: all 0.2s ease;
+  opacity: 0.8;
+  width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff !important;
+  font-size: 2rem; /* Make arrow icon/text bigger */
+}
+
+#downBtn:hover {
+  opacity: 1;
+  color: #ffffff !important;
+  transform: translateY(1px);
+}
+
+#downBtn:active {
+  transform: translateY(2px);
+  color: #198754 !important;
+}
+
+/* White line strips on sides of arrow */
+.arrow-side-line {
+  flex: 1;
+  height: 1px;
+  background-color: #ffffff;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+/* Hover effect for the entire arrow container */
+.d-flex:has(#downBtn):hover .arrow-side-line {
+  opacity: 1;
+}
+
+/* Notification Toast */
+.notification-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    border-radius: 4px;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    animation: fadeInOut 3s ease forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}

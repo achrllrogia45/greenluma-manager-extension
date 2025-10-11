@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "GreenLuma Manager",
+  "version": "1.0.0",
+  "description": "A browser extension for managing GreenLuma features.",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "GreenLuma Manager"
+  },
+  "permissions": [],
+  "host_permissions": [],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [],
+  "web_accessible_resources": [
+    {
+      "resources": ["data.json", "script.js", "styles.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
