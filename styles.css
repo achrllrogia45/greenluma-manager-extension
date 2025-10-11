@@ -41,22 +41,119 @@ body {
             min-width: 0;
         }
         .col-id { width: 60px; min-width: 40px; }
-        .col-name { width: calc(100% - 140px); min-width: 100px; }
+        .col-name { width: calc(100% - 140px); min-width: 100px; white-space: normal; word-wrap: break-word; overflow-wrap: break-word; }
         .col-type { width: 80px; min-width: 60px; }
         
         .games-container {
             overflow-x: auto;
             overflow-y: auto;
-        }
-        
-        .games-table {
-            min-width: 300px;
             width: 100%;
         }
         
-        /* Quick games styling */
-        .quick-game-row:hover {
+        .games-table {
+            min-width: 280px;
+            width: 100%;
+            table-layout: auto;
+        }
+        
+        /* Table column definitions for fixed widths */
+        .col-checkbox {
+            width: 40px;
+            min-width: 40px;
+            max-width: 40px;
+            flex: 0 0 40px;
+        }
+        
+        .col-priority {
+            width: 50px;
+            min-width: 50px;
+            max-width: 50px;
+            flex: 0 0 50px;
+        }
+        
+        .col-id {
+            width: 80px;
+            min-width: 80px;
+            max-width: 80px;
+            flex: 0 0 80px;
+        }
+        
+        .col-name {
+            min-width: 120px;
+            flex: 1 1 auto;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+        }
+        
+        .col-type {
+            width: 60px;
+            min-width: 60px;
+            max-width: 60px;
+            flex: 0 0 60px;
+        }
+        
+        /* Ensure the header row uses full width */
+        .games-table .d-flex {
+            width: 100% !important;
+            min-width: 100% !important;
+        }
+        
+        /* Ensure consistent grid alignment */
+        .d-flex[style*="min-width: max-content"] {
+            width: 100% !important;
+            min-width: 100% !important;
+        }
+        
+        /* Fix blank space issue in smaller windows */
+        .games-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* Ensure table rows stretch to container width */
+        .games-table .d-flex {
+            min-width: 100%;
+            width: 100%;
+        }
+        
+        /* Responsive table behavior */
+        @media (max-width: 350px) {
+            .games-table {
+                min-width: 280px;
+            }
+            .col-name {
+                min-width: 100px;
+            }
+        }
+        
+        /* Fix the Type column alignment */
+        .col-type {
+            text-align: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        
+        /* Get App List styling */
+        .app-row {
+            width: 100%;
+            min-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .app-row:hover {
             background-color: rgba(108, 117, 125, 0.2);
+        }
+        
+        .game-row {
+            width: 100%;
+            min-width: 100%;
+            box-sizing: border-box;
         }
         
         .game-row:hover {
@@ -153,7 +250,7 @@ body {
 }
 
 /* Ensure panels resize properly */
-#quickGamesSection {
+#getAppSection {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;

@@ -370,7 +370,7 @@ function displayGames(games) {
         
         const gameRow = document.createElement('div');
         gameRow.className = `d-flex small ${borderClass} game-row`;
-        gameRow.style.minWidth = 'max-content';
+        gameRow.style.width = '100%';
         gameRow.style.padding = '0.15rem 0';
         gameRow.style.cursor = isDraggable ? 'move' : 'pointer';
         gameRow.setAttribute('data-game-id', game.ID);
@@ -402,17 +402,17 @@ function displayGames(games) {
         const priorityValue = parseInt(game.Priority);
         
         gameRow.innerHTML = `
-            <div class="text-center border-end border-dark-custom" style="min-width: 40px; padding: 0.15rem 0.5rem;">
+            <div class="col-checkbox text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem;">
                 <input type="checkbox" class="form-check-input form-check-input-sm game-checkbox" data-game-id="${game.ID}" style="margin: 0;" ${selectionState.selectedItems.has(game.ID.toString()) ? 'checked' : ''}>
             </div>
-            <div class="text-center border-end border-dark-custom" style="min-width: 50px; padding: 0.15rem 0.25rem;">
+            <div class="col-priority text-center border-end border-dark-custom" style="padding: 0.15rem 0.25rem;">
                 <input type="number" class="priority-input" data-game-id="${game.ID}" value="${priorityValue}" 
                        style="width: 40px; height: 20px; font-size: 0.7rem; text-align: center; background: transparent; border: 1px solid #495057; color: #f8f9fa; border-radius: 2px;" 
                        min="0" max="999" ${isDraggable ? '' : 'readonly'}>
             </div>
-            <div class="text-center border-end border-dark-custom" style="min-width: 80px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.ID}</div>
-            <div class="border-end border-dark-custom" style="min-width: 200px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.Name}</div>
-            <div class="text-center border-end border-dark-custom" style="min-width: 60px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.Type}</div>
+            <div class="col-id text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.ID}</div>
+            <div class="col-name border-end border-dark-custom" style="padding: 0.15rem 0.5rem; font-size: 0.75rem;">${game.Name}</div>
+            <div class="col-type text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.Type}</div>
         `;
         
         gamesList.appendChild(gameRow);
@@ -838,12 +838,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load games data when page loads
     loadGamesData();
     
-    // Load quick games data (simplified version)
-    loadQuickGamesData();
-    
-    // Initialize source toggle functionality
-    initializeSourceToggle();
-    
     // Initialize path functionality
     initializePath();
     
@@ -1231,420 +1225,7 @@ function downloadGamesList() {
     }
 }
 
-// Load quick games data (simplified version without priorities)
-async function loadQuickGamesData() {
-    console.log("loadQuickGamesData called");
-    
-    try {
-        // Try to load from data.json
-        const games = await loadGamesFromDataJson();
-        console.log("Loaded", games.length, "games for quick games list");
-        
-        // Validate games array
-        if (!Array.isArray(games)) {
-            console.error("Invalid games data format for quick list, resetting to empty array");
-            return;
-        }
-        
-        // Store for quick games list
-        window.quickGamesData = games;
-        
-        // Sort by ID by default
-        let sortedGames = [...games].sort((a, b) => parseInt(a.ID) - parseInt(b.ID));
-        
-        // Display the quick games
-        displayQuickGames(sortedGames);
-        
-        // Set initial quick sort state
-        quickSortState.column = 'ID';
-        quickSortState.direction = 'asc';
-        
-        // Update sort indicators
-        updateQuickSortIndicators();
-        
-        console.log("Quick games loaded and displayed");
-    } catch (error) {
-        console.error('Error loading quick games data:', error);
-        const quickGamesList = document.getElementById('quickGamesList');
-        if (quickGamesList) {
-            quickGamesList.innerHTML = '<div class="text-muted small p-2">Error loading games data</div>';
-        }
-    }
-}
 
-// Sorting state for quick games list
-let quickSortState = {
-    column: 'ID', // Default to ID sorting
-    direction: 'asc' // 'asc' or 'desc'
-};
-
-// Selection state tracking for quick games
-let quickSelectionState = {
-    lastSelectedIndex: -1,
-    selectedItems: new Set()
-};
-
-// Get sorted games for quick list based on column and direction
-function getQuickSortedGames(games, column, direction) {
-    console.log(`getQuickSortedGames called with column=${column}, direction=${direction}`);
-    
-    if (!games) {
-        console.warn("No games provided for quick sorting");
-        return [];
-    }
-    
-    // Create a deep copy to avoid mutation issues
-    const gamesToSort = JSON.parse(JSON.stringify(games));
-    
-    console.log(`Sorting ${gamesToSort.length} quick games by ${column} in ${direction} order`);
-    
-    return gamesToSort.sort((a, b) => {
-        let valueA, valueB;
-        
-        switch(column) {
-            case 'ID':
-                valueA = parseInt(a.ID) || 0;
-                valueB = parseInt(b.ID) || 0;
-                break;
-                
-            case 'Name':
-                valueA = (a.Name || '').toLowerCase();
-                valueB = (b.Name || '').toLowerCase();
-                break;
-                
-            case 'Type':
-                // Special sorting for Type: Game comes before DLC
-                valueA = (a.Type || '').toLowerCase();
-                valueB = (b.Type || '').toLowerCase();
-                
-                // For Type sorting, prioritize "game" over "dlc"
-                if (valueA === 'game' && valueB === 'dlc') {
-                    return direction === 'asc' ? -1 : 1;
-                } else if (valueA === 'dlc' && valueB === 'game') {
-                    return direction === 'asc' ? 1 : -1;
-                }
-                break;
-                
-            default:
-                console.warn(`Unknown quick sort column: ${column}`);
-                return 0;
-        }
-        
-        // For Type, if both are same or neither is game/dlc, do alphabetical
-        if (column === 'Type' && valueA !== 'game' && valueA !== 'dlc' && valueB !== 'game' && valueB !== 'dlc') {
-            if (direction === 'asc') {
-                return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-            } else {
-                return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
-            }
-        }
-        
-        // Standard comparison for non-Type columns or when Type values are same
-        if (column !== 'Type' || valueA === valueB) {
-            // For numeric values (ID)
-            if (typeof valueA === 'number' && typeof valueB === 'number') {
-                return direction === 'asc' ? valueA - valueB : valueB - valueA;
-            }
-            // For string values
-            else {
-                if (direction === 'asc') {
-                    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-                } else {
-                    return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
-                }
-            }
-        }
-        
-        return 0;
-    });
-}
-
-// Sort quick games data
-function sortQuickGames(column) {
-    if (!window.quickGamesData) return;
-    
-    // Toggle direction if same column, otherwise start with ascending
-    if (quickSortState.column === column) {
-        quickSortState.direction = quickSortState.direction === 'asc' ? 'desc' : 'asc';
-    } else {
-        quickSortState.column = column;
-        quickSortState.direction = 'asc';
-    }
-    
-    const sortedGames = getQuickSortedGames(window.quickGamesData, column, quickSortState.direction);
-    
-    displayQuickGames(sortedGames);
-    updateQuickSortIndicators();
-}
-
-// Update sort indicators in headers for quick games
-function updateQuickSortIndicators() {
-    console.log(`Updating quick sort indicators: ${quickSortState.column} ${quickSortState.direction}`);
-    
-    // Reset all header styles first
-    document.querySelectorAll('[data-quick-sort]').forEach(header => {
-        header.style.fontWeight = 'normal';
-        header.style.color = '#f8f9fa'; // text-light
-    });
-    
-    // Remove all existing sort indicators
-    document.querySelectorAll('.quick-sort-indicator').forEach(indicator => {
-        indicator.remove();
-    });
-    
-    // Add indicator to current sorted column
-    if (quickSortState.column) {
-        const headerCell = document.querySelector(`[data-quick-sort="${quickSortState.column}"]`);
-        if (headerCell) {
-            // Make the sorted header more visible
-            headerCell.style.fontWeight = 'bold';
-            headerCell.style.color = '#6ea8fe'; // text-primary-custom
-            
-            const indicator = document.createElement('span');
-            indicator.className = 'quick-sort-indicator';
-            indicator.style.marginLeft = '5px';
-            indicator.style.fontSize = '0.65rem';
-            indicator.style.color = '#6ea8fe'; // text-primary-custom
-            indicator.innerHTML = quickSortState.direction === 'asc' ? '▲' : '▼';
-            
-            headerCell.appendChild(indicator);
-        }
-    }
-}
-
-// Display games in the quick table
-function displayQuickGames(games) {
-    console.log("displayQuickGames called with", games.length, "games");
-    
-    const quickGamesList = document.getElementById('quickGamesList');
-    if (!quickGamesList) {
-        console.error("Could not find quickGamesList element");
-        return;
-    }
-    
-    quickGamesList.innerHTML = '';
-
-    games.forEach((game, index) => {
-        const isLast = index === games.length - 1;
-        const borderClass = isLast ? '' : 'border-bottom border-dark-custom';
-        
-        const gameRow = document.createElement('div');
-        gameRow.className = `d-flex small ${borderClass} quick-game-row`;
-        gameRow.style.minWidth = 'max-content';
-        gameRow.style.padding = '0.15rem 0';
-        gameRow.style.cursor = 'pointer';
-        gameRow.setAttribute('data-game-id', game.ID);
-        
-        gameRow.innerHTML = `
-            <div class="text-center border-end border-dark-custom" style="min-width: 40px; padding: 0.15rem 0.5rem;">
-                <input type="checkbox" class="form-check-input form-check-input-sm quick-game-checkbox" data-game-id="${game.ID}" style="margin: 0;" ${quickSelectionState.selectedItems.has(game.ID.toString()) ? 'checked' : ''}>
-            </div>
-            <div class="text-center border-end border-dark-custom" style="min-width: 80px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.ID}</div>
-            <div class="border-end border-dark-custom" style="min-width: 200px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.Name}</div>
-            <div class="text-center border-end border-dark-custom" style="min-width: 60px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.Type}</div>
-        `;
-        
-        quickGamesList.appendChild(gameRow);
-        
-        // Apply selection visual if item is selected
-        if (quickSelectionState.selectedItems.has(game.ID.toString())) {
-            updateQuickRowSelection(gameRow, true);
-        }
-    });
-    
-    console.log("Adding event handlers to displayed quick games");
-    
-    // Add click handlers for row selection
-    addQuickRowClickHandlers();
-    // Update select all state
-    updateQuickSelectAllState();
-    // Add sorting event listeners
-    addQuickSortingEventListeners();
-    
-    console.log("Quick games displayed successfully");
-}
-
-// Add sorting event listeners to header elements for quick games
-function addQuickSortingEventListeners() {
-    // Remove existing event listeners first
-    document.querySelectorAll('[data-quick-sort]').forEach(header => {
-        const newHeader = header.cloneNode(true);
-        header.parentNode.replaceChild(newHeader, header);
-    });
-    
-    // Add new event listeners
-    document.querySelectorAll('[data-quick-sort]').forEach(header => {
-        header.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const column = this.getAttribute('data-quick-sort');
-            sortQuickGames(column);
-        });
-        
-        // Make it clear these headers are clickable
-        header.style.cursor = 'pointer';
-        header.title = `Sort by ${header.getAttribute('data-quick-sort')}`;
-    });
-}
-
-// Add click handlers for quick row selection
-function addQuickRowClickHandlers() {
-    document.querySelectorAll('.quick-game-row').forEach((row, index) => {
-        row.addEventListener('click', function(e) {
-            // Don't toggle if clicking directly on checkbox
-            if (e.target.type === 'checkbox') return;
-            
-            const gameId = this.getAttribute('data-game-id');
-            const checkbox = this.querySelector(`[data-game-id="${gameId}"]`);
-            
-            handleQuickRowSelection(index, gameId, checkbox, e);
-        });
-    });
-    
-    // Add change handlers for checkboxes
-    document.querySelectorAll('.quick-game-checkbox').forEach((checkbox, index) => {
-        checkbox.addEventListener('change', function(e) {
-            const row = this.closest('.quick-game-row');
-            const gameId = this.getAttribute('data-game-id');
-            
-            // Handle individual checkbox changes
-            if (this.checked) {
-                quickSelectionState.selectedItems.add(gameId);
-            } else {
-                quickSelectionState.selectedItems.delete(gameId);
-            }
-            
-            quickSelectionState.lastSelectedIndex = index;
-            updateQuickRowSelection(row, this.checked);
-            updateQuickSelectAllState();
-        });
-    });
-    
-    // Add handler for the select all checkbox
-    const quickSelectAll = document.getElementById('quickSelectAll');
-    if (quickSelectAll) {
-        quickSelectAll.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.quick-game-checkbox');
-            const rows = document.querySelectorAll('.quick-game-row');
-            
-            // Clear current selection
-            quickSelectionState.selectedItems.clear();
-            
-            checkboxes.forEach((checkbox, index) => {
-                checkbox.checked = this.checked;
-                
-                if (this.checked) {
-                    const gameId = checkbox.getAttribute('data-game-id');
-                    quickSelectionState.selectedItems.add(gameId);
-                }
-                
-                updateQuickRowSelection(rows[index], this.checked);
-            });
-            
-            // Update last selected index
-            if (this.checked && checkboxes.length > 0) {
-                quickSelectionState.lastSelectedIndex = checkboxes.length - 1;
-            } else {
-                quickSelectionState.lastSelectedIndex = -1;
-            }
-        });
-    }
-}
-
-// Handle quick row selection with keyboard modifiers
-function handleQuickRowSelection(index, gameId, checkbox, event) {
-    const isCtrlPressed = event.ctrlKey || event.metaKey;
-    const isShiftPressed = event.shiftKey;
-    
-    if (isShiftPressed && quickSelectionState.lastSelectedIndex !== -1) {
-        // Shift+Click: Select range
-        selectQuickRange(quickSelectionState.lastSelectedIndex, index);
-    } else if (isCtrlPressed) {
-        // Ctrl+Click: Toggle individual selection
-        checkbox.checked = !checkbox.checked;
-        
-        if (checkbox.checked) {
-            quickSelectionState.selectedItems.add(gameId);
-        } else {
-            quickSelectionState.selectedItems.delete(gameId);
-        }
-        
-        quickSelectionState.lastSelectedIndex = index;
-        updateQuickRowSelection(checkbox.closest('.quick-game-row'), checkbox.checked);
-    } else {
-        // Normal click: Clear all and select this one
-        clearAllQuickSelections();
-        
-        checkbox.checked = true;
-        quickSelectionState.selectedItems.add(gameId);
-        quickSelectionState.lastSelectedIndex = index;
-        updateQuickRowSelection(checkbox.closest('.quick-game-row'), true);
-    }
-    
-    updateQuickSelectAllState();
-}
-
-// Select a range of items in quick list
-function selectQuickRange(startIndex, endIndex) {
-    const start = Math.min(startIndex, endIndex);
-    const end = Math.max(startIndex, endIndex);
-    
-    const checkboxes = document.querySelectorAll('.quick-game-checkbox');
-    const rows = document.querySelectorAll('.quick-game-row');
-    
-    for (let i = start; i <= end; i++) {
-        if (checkboxes[i] && rows[i]) {
-            const gameId = checkboxes[i].getAttribute('data-game-id');
-            checkboxes[i].checked = true;
-            quickSelectionState.selectedItems.add(gameId);
-            updateQuickRowSelection(rows[i], true);
-        }
-    }
-}
-
-// Clear all quick selections
-function clearAllQuickSelections() {
-    quickSelectionState.selectedItems.clear();
-    
-    document.querySelectorAll('.quick-game-checkbox').forEach(checkbox => {
-        checkbox.checked = false;
-        updateQuickRowSelection(checkbox.closest('.quick-game-row'), false);
-    });
-}
-
-// Update the quick select all checkbox state
-function updateQuickSelectAllState() {
-    const selectAllCheckbox = document.getElementById('quickSelectAll');
-    if (!selectAllCheckbox) return;
-    
-    const totalCheckboxes = document.querySelectorAll('.quick-game-checkbox').length;
-    const selectedCount = quickSelectionState.selectedItems.size;
-    
-    if (selectedCount === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-    } else if (selectedCount === totalCheckboxes) {
-        selectAllCheckbox.checked = true;
-        selectAllCheckbox.indeterminate = false;
-    } else {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = true;
-    }
-}
-
-// Update quick row selection visual
-function updateQuickRowSelection(row, isSelected) {
-    if (!row) return;
-    
-    if (isSelected) {
-        row.style.backgroundColor = 'rgba(13, 202, 240, 0.2)';
-        row.style.borderColor = '#0dcaf0';
-    } else {
-        row.style.backgroundColor = '';
-        row.style.borderColor = '';
-    }
-}
 
 // Initialize resize functionality
 function initializeResize() {
@@ -1911,34 +1492,36 @@ function initializeHorizontalPanelResize() {
     console.log("Initializing horizontal panel resize functionality");
     
     const resizer = document.getElementById('horizontalResizer');
-    const quickGamesSection = document.getElementById('quickGamesSection');
+    const getAppSection = document.getElementById('getAppSection');
     const gamesSection = document.getElementById('gamesSection');
     
-    if (!resizer || !quickGamesSection || !gamesSection) {
+    if (!resizer || !getAppSection || !gamesSection) {
         console.error("Panel resize elements not found");
+        console.log("Resizer:", resizer);
+        console.log("GetAppSection:", getAppSection);
+        console.log("GamesSection:", gamesSection);
         return;
     }
     
     let isResizing = false;
     let startY = 0;
-    let startQuickHeight = 0;
+    let startAppHeight = 0;
     let startGamesHeight = 0;
     let containerHeight = 0;
     
     // Set initial flex properties
-    quickGamesSection.style.flex = '0 0 auto';
+    getAppSection.style.flex = '0 0 auto';
     gamesSection.style.flex = '1 1 auto';
     
-    // Load saved panel heights or set defaults (as percentages of container)
-    const savedQuickHeight = localStorage.getItem('quickPanelHeight');
-    const savedGamesHeight = localStorage.getItem('gamesPanelHeight');
+    // Load saved panel heights or set defaults
+    const savedAppHeight = localStorage.getItem('appPanelHeight');
     
-    if (savedQuickHeight) {
-        quickGamesSection.style.height = savedQuickHeight;
-        quickGamesSection.style.minHeight = savedQuickHeight;
+    if (savedAppHeight) {
+        getAppSection.style.height = savedAppHeight;
+        getAppSection.style.minHeight = savedAppHeight;
     } else {
-        quickGamesSection.style.height = '200px';
-        quickGamesSection.style.minHeight = '200px';
+        getAppSection.style.height = '250px';
+        getAppSection.style.minHeight = '250px';
     }
     
     resizer.addEventListener('mousedown', function(e) {
@@ -1947,14 +1530,14 @@ function initializeHorizontalPanelResize() {
         startY = e.clientY;
         
         // Get the parent container (main content area)
-        const parentContainer = quickGamesSection.parentElement;
+        const parentContainer = getAppSection.parentElement;
         const parentRect = parentContainer.getBoundingClientRect();
         containerHeight = parentRect.height;
         
         // Get current heights
-        const quickRect = quickGamesSection.getBoundingClientRect();
+        const appRect = getAppSection.getBoundingClientRect();
         const gamesRect = gamesSection.getBoundingClientRect();
-        startQuickHeight = quickRect.height;
+        startAppHeight = appRect.height;
         startGamesHeight = gamesRect.height;
         
         // Add visual feedback
@@ -1962,7 +1545,7 @@ function initializeHorizontalPanelResize() {
         document.body.style.cursor = 'ns-resize';
         resizer.classList.add('resizing');
         
-        console.log(`Starting panel resize - Quick: ${startQuickHeight}px, Games: ${startGamesHeight}px, Container: ${containerHeight}px`);
+        console.log(`Starting panel resize - App: ${startAppHeight}px, Games: ${startGamesHeight}px, Container: ${containerHeight}px`);
     });
     
     document.addEventListener('mousemove', function(e) {
@@ -1971,19 +1554,19 @@ function initializeHorizontalPanelResize() {
         e.preventDefault();
         
         const deltaY = e.clientY - startY;
-        const newQuickHeight = startQuickHeight + deltaY;
+        const newAppHeight = startAppHeight + deltaY;
         
-        // Apply constraints - minimum 100px, maximum 80% of container
-        const minHeight = 100;
-        const maxQuickHeight = containerHeight * 0.8;
-        const constrainedQuickHeight = Math.max(minHeight, Math.min(maxQuickHeight, newQuickHeight));
+        // Apply constraints - minimum 150px, maximum 80% of container
+        const minHeight = 150;
+        const maxAppHeight = containerHeight * 0.8;
+        const constrainedAppHeight = Math.max(minHeight, Math.min(maxAppHeight, newAppHeight));
         
-        // Set the quick panel height directly
-        quickGamesSection.style.height = `${constrainedQuickHeight}px`;
-        quickGamesSection.style.minHeight = `${constrainedQuickHeight}px`;
+        // Set the app panel height directly
+        getAppSection.style.height = `${constrainedAppHeight}px`;
+        getAppSection.style.minHeight = `${constrainedAppHeight}px`;
         
         // The games section will automatically take the remaining space due to flex: 1
-        console.log(`Resizing to: Quick ${constrainedQuickHeight}px`);
+        console.log(`Resizing to: App ${constrainedAppHeight}px`);
     });
     
     document.addEventListener('mouseup', function() {
@@ -1997,113 +1580,13 @@ function initializeHorizontalPanelResize() {
         resizer.classList.remove('resizing');
         
         // Save current height
-        const quickRect = quickGamesSection.getBoundingClientRect();
-        const currentQuickHeight = `${Math.round(quickRect.height)}px`;
+        const appRect = getAppSection.getBoundingClientRect();
+        const currentAppHeight = `${Math.round(appRect.height)}px`;
         
-        localStorage.setItem('quickPanelHeight', currentQuickHeight);
+        localStorage.setItem('appPanelHeight', currentAppHeight);
         
-        console.log(`Panel resize complete - Quick: ${currentQuickHeight}`);
+        console.log(`Panel resize complete - App: ${currentAppHeight}`);
     });
     
     console.log("Horizontal panel resize functionality initialized");
-}
-
-// Source toggle functionality
-let activeSource = null; // 'steam' or 'steamdb'
-
-function initializeSourceToggle() {
-    console.log("Initializing source toggle functionality");
-    
-    const steamBtn = document.getElementById('steamBtn');
-    const steamdbBtn = document.getElementById('steamdbBtn');
-    const searchInput = document.getElementById('quickGamesSearch');
-    
-    if (!steamBtn || !steamdbBtn || !searchInput) {
-        console.error("Source toggle elements not found");
-        return;
-    }
-    
-    // Load saved active source
-    const savedSource = localStorage.getItem('activeSource');
-    if (savedSource) {
-        activeSource = savedSource;
-        updateSourceUI();
-    }
-    
-    // Add click handlers
-    steamBtn.addEventListener('click', function() {
-        toggleSource('steam');
-    });
-    
-    steamdbBtn.addEventListener('click', function() {
-        toggleSource('steamdb');
-    });
-    
-    console.log("Source toggle functionality initialized");
-}
-
-function toggleSource(source) {
-    console.log(`Toggling source: ${source}`);
-    
-    if (activeSource === source) {
-        // If clicking the active source, deactivate it
-        activeSource = null;
-        localStorage.removeItem('activeSource');
-    } else {
-        // Activate the clicked source
-        activeSource = source;
-        localStorage.setItem('activeSource', source);
-    }
-    
-    updateSourceUI();
-}
-
-function updateSourceUI() {
-    const steamBtn = document.getElementById('steamBtn');
-    const steamdbBtn = document.getElementById('steamdbBtn');
-    const searchInput = document.getElementById('quickGamesSearch');
-    
-    // Reset button states
-    steamBtn.classList.remove('btn-success', 'btn-secondary');
-    steamdbBtn.classList.remove('btn-success', 'btn-secondary');
-    
-    // Update button appearances and search placeholder
-    if (activeSource === 'steam') {
-        steamBtn.classList.add('btn-success');
-        steamdbBtn.classList.add('btn-secondary');
-        
-        // Update button content with toggle icon
-        steamBtn.innerHTML = '<i class="bi bi-steam"></i> <i class="bi bi-check-circle-fill" style="font-size: 0.7rem; color: #20c997;"></i> Steam';
-        steamdbBtn.innerHTML = '<i class="bi bi-database"></i> SteamDB';
-        
-        // Update search placeholder
-        searchInput.placeholder = 'Search games... (Steam source active)';
-        
-        console.log("Steam source activated");
-    } else if (activeSource === 'steamdb') {
-        steamBtn.classList.add('btn-secondary');
-        steamdbBtn.classList.add('btn-success');
-        
-        // Update button content with toggle icon
-        steamBtn.innerHTML = '<i class="bi bi-steam"></i> Steam';
-        steamdbBtn.innerHTML = '<i class="bi bi-database"></i> <i class="bi bi-check-circle-fill" style="font-size: 0.7rem; color: #20c997;"></i> SteamDB';
-        
-        // Update search placeholder
-        searchInput.placeholder = 'Search games... (SteamDB source active)';
-        
-        console.log("SteamDB source activated");
-    } else {
-        // No source active
-        steamBtn.classList.add('btn-secondary');
-        steamdbBtn.classList.add('btn-secondary');
-        
-        // Reset button content
-        steamBtn.innerHTML = '<i class="bi bi-steam"></i> Steam';
-        steamdbBtn.innerHTML = '<i class="bi bi-database"></i> SteamDB';
-        
-        // Update search placeholder
-        searchInput.placeholder = 'Search games... (No source selected)';
-        
-        console.log("No source active");
-    }
 }

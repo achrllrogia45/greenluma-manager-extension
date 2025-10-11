@@ -20,54 +20,62 @@
             <!-- Button Section -->
             <div class="p-2 border-bottom border-dark-custom">
                 <div class="d-flex gap-2">
-                    <button id="steamBtn" class="btn btn-secondary btn-sm-custom flex-fill" data-source="steam">
+                    <button id="steamSearchBtn" class="btn btn-secondary btn-sm-custom flex-fill" data-active="false" data-search-url="https://store.steampowered.com/search/?term=">
                       <i class="bi bi-steam"></i> Steam
                     </button>
-                    <button id="steamdbBtn" class="btn btn-secondary btn-sm-custom flex-fill" data-source="steamdb">
+                    <button id="steamdbSearchBtn" class="btn btn-secondary btn-sm-custom flex-fill" data-active="false" data-search-url="https://steamdb.info/search/?q=">
                       <i class="bi bi-database"></i> SteamDB
                     </button>
                 </div>
             </div>
 
-            <!-- Quick Games List Section -->
-            <div class="p-2 border-bottom border-dark-custom flex-fill d-flex flex-column" id="quickGamesSection" style="min-height: 150px;">
+            <!-- Get App List Section -->
+            <div class="p-2 border-bottom border-dark-custom d-flex flex-column" id="getAppSection" style="min-height: 150px; flex: 0 0 auto;">
                 <!-- Search Bar -->
                 <div class="mb-2">
-                  <input 
-                  type="text" 
-                  id="quickGamesSearch" 
-                  placeholder="Search games... (No source selected)"
-                  class="form-control form-control-sm bg-secondary-custom text-light border-0"
-                  style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
-                  autocomplete="off"
-                  >
+                  <div class="input-group input-group-sm">
+                    <input 
+                      type="text" 
+                      id="getAppSearch" 
+                      placeholder="Search apps..."
+                      class="form-control form-control-sm bg-secondary-custom text-light border-0"
+                      style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
+                      autocomplete="off"
+                    >
+                    <button id="searchBtn" class="btn btn-secondary" type="button" disabled>
+                      <i class="bi bi-search"></i>
+                    </button>
+                  </div>
+                  <div id="searchInfo" class="small text-muted-custom mt-1" style="font-size: 0.7rem; display: none;">
+                    Searching with: <span id="activeSearchEngine">None</span>
+                  </div>
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-1">
-                    <label class="form-label small text-muted-custom mb-0">Server Games List</label>
+                    <label class="form-label small text-muted-custom mb-0">Get App List</label>
                 </div>
                 <div class="bg-secondary-custom rounded overflow-hidden d-flex flex-column" style="flex: 1; min-height: 0;">
                     <div class="games-container" style="flex: 1; overflow-x: auto; overflow-y: auto;">
                         <div class="games-table">
                             <!-- Header -->
                             <div class="bg-dark-custom text-light small fw-semibold border-bottom border-dark-custom sticky-top">
-                                <div class="d-flex" style="min-width: max-content;">
-                                    <div class="text-center border-end border-dark-custom" style="min-width: 40px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">
-                                        <input type="checkbox" id="quickSelectAll" class="form-check-input form-check-input-sm" style="margin: 0;">
+                                <div class="d-flex" style="width: 100%;">
+                                    <div class="col-checkbox text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">
+                                        <input type="checkbox" id="getAppSelectAll" class="form-check-input form-check-input-sm" style="margin: 0;">
                                     </div>
-                                    <div class="text-center border-end border-dark-custom" style="min-width: 80px; padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-quick-sort="ID">
+                                    <div class="col-id text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-app-sort="ID">
                                         ID
                                     </div>
-                                    <div class="border-end border-dark-custom" style="min-width: 200px; padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-quick-sort="Name">
+                                    <div class="col-name border-end border-dark-custom" style="padding: 0.15rem 0.5rem; cursor: pointer; user-select: none; font-size: 0.75rem;" data-app-sort="Name">
                                         Name
                                     </div>
-                                    <div class="text-center border-end bg-dark-custom" style="min-width: 60px; padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-quick-sort="Type">
+                                    <div class="col-type text-center border-end bg-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-app-sort="Type">
                                         Type
                                     </div>
                                 </div>
                             </div>
                             <!-- List Content -->
-                            <div id="quickGamesList">
-                              <!-- Games will be loaded from data.json -->
+                            <div id="getAppList" class="w-100">
+                              <!-- Search results will appear here -->
                             </div>
                         </div>
                     </div>
@@ -105,7 +113,7 @@
 
            
             <!-- Games List Section -->
-            <div class="p-2 flex-fill d-flex flex-column" id="gamesSection" style="min-height: 150px;">
+            <div class="p-2 d-flex flex-column" id="gamesSection" style="min-height: 150px; flex: 1 1 auto;">
                 <div class="d-flex align-items-center justify-content-between mb-1">
                     <label class="form-label small text-muted-custom mb-0">Games List</label>
                     <div class="d-flex align-items-center gap-1">
@@ -129,26 +137,26 @@
                         <div class="games-table">
                             <!-- Header -->
                             <div class="bg-dark-custom text-light small fw-semibold border-bottom border-dark-custom sticky-top">
-                                <div class="d-flex" style="min-width: max-content;">
-                                    <div class="text-center border-end border-dark-custom" style="min-width: 40px; padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">
+                                <div class="d-flex" style="width: 100%;">
+                                    <div class="col-checkbox text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">
                                         <input type="checkbox" id="selectAll" class="form-check-input form-check-input-sm" style="margin: 0;">
                                     </div>
-                                    <div class="text-center border-end border-dark-custom" style="min-width: 50px; padding: 0.15rem 0.25rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="Priority">
+                                    <div class="col-priority text-center border-end border-dark-custom" style="padding: 0.15rem 0.25rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="Priority">
                                         #
                                     </div>
-                                    <div class="text-center border-end border-dark-custom" style="min-width: 80px; padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="ID">
+                                    <div class="col-id text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="ID">
                                         ID
                                     </div>
-                                    <div class="border-end border-dark-custom" style="min-width: 200px; padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="Name">
+                                    <div class="col-name border-end border-dark-custom" style="padding: 0.15rem 0.5rem; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="Name">
                                         Name
                                     </div>
-                                    <div class="text-center border-end bg-dark-custom" style="min-width: 60px; padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="Type">
+                                    <div class="col-type text-center border-end bg-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; cursor: pointer; user-select: none; font-size: 0.75rem;" data-sort="Type">
                                         Type
                                     </div>
                                 </div>
                             </div>
                             <!-- List Content -->
-                            <div id="gamesList">
+                            <div id="gamesList" class="w-100">
                               <!-- Games will be loaded from data.json -->
                             </div>
                         </div>
@@ -210,6 +218,8 @@
     <!-- Resize handle -->
     <div id="resize-handle" class="resize-handle-corner"></div>
 
-    <script src="script.js"></script>
+    <script src="main.js"></script>
+    <script src="app-sort.js"></script>
+    <script src="search.js"></script>
 </body>
 </html>
