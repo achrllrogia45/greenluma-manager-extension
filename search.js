@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize down button functionality
     initializeDownButton();
+    
+    // Initialize sort dropdown functionality
+    initializeSortDropdown();
 });
 
 // Steam API Functions
@@ -93,13 +96,84 @@ async function getBatchAppDetails(appids) {
     return results;
 }
 
-function filterAppsByName(apps, searchTerm) {
+function filterAppsByName(apps, searchTerm, sortMode = 'relevance') {
     if (!apps || !searchTerm) return [];
     
     const term = searchTerm.toLowerCase();
-    return apps.filter(app => 
-        app.name && app.name.toLowerCase().includes(term)
-    );
+    
+    // First, filter all apps that match either name or ID
+    const matchingApps = apps.filter(app => {
+        const appName = app.name ? app.name.toLowerCase() : '';
+        const appId = app.appid ? app.appid.toString() : '';
+        return appName.includes(term) || appId.includes(term);
+    });
+    
+    // Apply sorting based on sort mode
+    switch (sortMode) {
+        case 'relevance':
+            // Separate results into different priority groups for relevance sorting
+            const idMatches = [];
+            const startsWithName = [];
+            const containsName = [];
+            
+            matchingApps.forEach(app => {
+                const appName = app.name ? app.name.toLowerCase() : '';
+                const appId = app.appid ? app.appid.toString() : '';
+                
+                // Check if ID matches (exact or partial) - HIGHEST PRIORITY
+                if (appId.includes(term)) {
+                    idMatches.push(app);
+                }
+                // Check if name starts with search term - HIGH PRIORITY
+                else if (appName.startsWith(term)) {
+                    startsWithName.push(app);
+                }
+                // Check if name contains search term - LOWER PRIORITY
+                else if (appName.includes(term)) {
+                    containsName.push(app);
+                }
+            });
+            
+            // Sort each group
+            const sortByName = (a, b) => {
+                const nameA = a.name ? a.name.toLowerCase() : '';
+                const nameB = b.name ? b.name.toLowerCase() : '';
+                return nameA.localeCompare(nameB);
+            };
+            
+            // Sort ID matches by ID (ascending)
+            idMatches.sort((a, b) => parseInt(a.appid) - parseInt(b.appid));
+            // Sort name groups alphabetically
+            startsWithName.sort(sortByName);
+            containsName.sort(sortByName);
+            
+            // Return results in priority order: ID matches, starts with, then contains
+            return [...idMatches, ...startsWithName, ...containsName];
+            
+        case 'id':
+            // Sort numerically by App ID
+            return matchingApps.sort((a, b) => parseInt(a.appid) - parseInt(b.appid));
+            
+        case 'name':
+            // Sort alphabetically (A-Z)
+            return matchingApps.sort((a, b) => {
+                const nameA = a.name ? a.name.toLowerCase() : '';
+                const nameB = b.name ? b.name.toLowerCase() : '';
+                return nameA.localeCompare(nameB);
+            });
+            
+        case 'type':
+            // Note: Type sorting will be applied after getting app details
+            // For now, sort by name as placeholder
+            return matchingApps.sort((a, b) => {
+                const nameA = a.name ? a.name.toLowerCase() : '';
+                const nameB = b.name ? b.name.toLowerCase() : '';
+                return nameA.localeCompare(nameB);
+            });
+            
+        default:
+            return matchingApps;
+    }
 }
 
 async function preloadSteamAppsList() {
@@ -293,8 +367,10 @@ async function performSteamAPISearch(searchTerm) {
         return;
     }
     
-    // Filter apps by search term
-    const filteredApps = filterAppsByName(steamAppsList, searchTerm);
+    // Filter apps by search term with selected sort mode
+    const sortDropdown = document.getElementById('sortDropdown');
+    const sortMode = sortDropdown ? sortDropdown.value : 'relevance';
+    const filteredApps = filterAppsByName(steamAppsList, searchTerm, sortMode);
     
     if (filteredApps.length === 0) {
         if (getAppList) {
@@ -304,11 +380,10 @@ async function performSteamAPISearch(searchTerm) {
         return;
     }
     
-    // Limit results to reasonable number to avoid overwhelming the UI
-    const maxResults = 50;
-    const limitedResults = filteredApps.slice(0, maxResults);
+    // Show all results - no limit
+    const limitedResults = filteredApps;
     
-    showNotification(`Found ${filteredApps.length} apps${filteredApps.length > maxResults ? ` (showing first ${maxResults})` : ''}`, "success");
+    showNotification(`Found ${filteredApps.length} apps`, "success");
     
     // Get app details for the filtered results
     try {
@@ -333,15 +408,93 @@ async function performSteamAPISearch(searchTerm) {
             };
         });
         
-        // Update window.getAppData for consistency
-        window.getAppData = formattedResults;
+        // Apply final sorting based on dropdown selection
+        const sortDropdown = document.getElementById('sortDropdown');
+        const sortMode = sortDropdown ? sortDropdown.value : 'relevance';
         
-        // Display the results
-        if (typeof appSortState !== 'undefined' && appSortState.column) {
-            const sortedResults = getSortedApps(formattedResults, appSortState.column, appSortState.direction);
-            displayAppList(sortedResults);
+        let finalResults = formattedResults;
+        
+        switch (sortMode) {
+            case 'relevance':
+                // Already sorted by relevance in filterAppsByName, keep order
+                break;
+                
+            case 'id':
+                // Sort numerically by ID
+                finalResults = formattedResults.sort((a, b) => parseInt(a.ID) - parseInt(b.ID));
+                break;
+                
+            case 'name':
+                // Sort alphabetically by name
+                finalResults = formattedResults.sort((a, b) => a.Name.toLowerCase().localeCompare(b.Name.toLowerCase()));
+                break;
+                
+            case 'type':
+                // Sort by Game/DLC priority (Game first), then alphabetically by name
+                finalResults = formattedResults.sort((a, b) => {
+                    const typeA = a.Type.toLowerCase();
+                    const typeB = b.Type.toLowerCase();
+                    
+                    // Game comes before DLC and other types
+                    if (typeA === 'game' && typeB !== 'game') return -1;
+                    if (typeA !== 'game' && typeB === 'game') return 1;
+                    if (typeA === 'dlc' && typeB !== 'dlc' && typeB !== 'game') return -1;
+                    if (typeA !== 'dlc' && typeA !== 'game' && typeB === 'dlc') return 1;
+                    
+                    // If same type, sort alphabetically by name
+                    if (typeA === typeB) {
+                        return a.Name.toLowerCase().localeCompare(b.Name.toLowerCase());
+                    }
+                    
+                    // Otherwise sort alphabetically by type
+                    return typeA.localeCompare(typeB);
+                });
+                break;
+        }
+        
+        // Update window.getAppData for consistency
+        window.getAppData = finalResults;
+        
+        // Display the results based on current sort mode
+        const currentSortDropdown = document.getElementById('sortDropdown');
+        const currentSortMode = currentSortDropdown ? currentSortDropdown.value : 'relevance';
+        
+        // Update appSortState to match dropdown selection
+        if (typeof appSortState !== 'undefined') {
+            if (currentSortMode === 'relevance') {
+                appSortState.column = null;
+                appSortState.direction = 'asc';
+            } else {
+                const columnMapping = {
+                    'id': 'ID',
+                    'name': 'Name',
+                    'type': 'Type'
+                };
+                appSortState.column = columnMapping[currentSortMode];
+                appSortState.direction = 'asc';
+            }
+        }
+        
+        // For relevance mode, results are already sorted, just display them
+        if (currentSortMode === 'relevance') {
+            displayAppList(finalResults);
+            // Clear header sort indicators for relevance mode
+            if (typeof clearAppHeaderSortIndicators === 'function') {
+                clearAppHeaderSortIndicators();
+            }
         } else {
-            displayAppList(formattedResults);
+            // For other modes, apply additional sorting and update indicators
+            if (typeof getSortedApps === 'function' && typeof appSortState !== 'undefined' && appSortState.column) {
+                const sortedResults = getSortedApps(finalResults, appSortState.column, appSortState.direction);
+                displayAppList(sortedResults);
+                
+                // Update header sort indicators
+                if (typeof updateAppSortIndicators === 'function') {
+                    updateAppSortIndicators();
+                }
+            } else {
+                displayAppList(finalResults);
+            }
         }
         
         console.log(`Displayed ${formattedResults.length} Steam API results for "${searchTerm}"`);
@@ -356,8 +509,28 @@ async function performSteamAPISearch(searchTerm) {
             Type: 'Game' // Default fallback
         }));
         
-        window.getAppData = basicResults;
-        displayAppList(basicResults);
+        // Apply sorting even for basic results
+        const fallbackSortDropdown = document.getElementById('sortDropdown');
+        const fallbackSortMode = fallbackSortDropdown ? fallbackSortDropdown.value : 'relevance';
+        
+        let finalBasicResults = basicResults;
+        
+        switch (fallbackSortMode) {
+            case 'id':
+                finalBasicResults = basicResults.sort((a, b) => parseInt(a.ID) - parseInt(b.ID));
+                break;
+            case 'name':
+                finalBasicResults = basicResults.sort((a, b) => a.Name.toLowerCase().localeCompare(b.Name.toLowerCase()));
+                break;
+            case 'type':
+                // All are 'Game' type, so just sort by name
+                finalBasicResults = basicResults.sort((a, b) => a.Name.toLowerCase().localeCompare(b.Name.toLowerCase()));
+                break;
+            // 'relevance' case is already handled by filterAppsByName
+        }
+        
+        window.getAppData = finalBasicResults;
+        displayAppList(finalBasicResults);
         
         showNotification(`Found ${basicResults.length} apps (details may be incomplete)`, "warning");
     }
@@ -756,4 +929,85 @@ function moveSelectedAppsToMainList() {
     showNotification(message, "success");
     
     console.log(`Moved ${newApps.length} apps to main list`);
+}
+
+// Initialize sort dropdown functionality
+function initializeSortDropdown() {
+    const sortDropdown = document.getElementById('sortDropdown');
+    if (!sortDropdown) {
+        console.warn("Sort dropdown not found");
+        return;
+    }
+    
+    sortDropdown.addEventListener('change', function() {
+        const selectedSort = this.value;
+        
+        // Sync with app sort state and update header indicators
+        if (typeof appSortState !== 'undefined') {
+            if (selectedSort === 'relevance') {
+                // Clear all header sorting indicators for relevance
+                appSortState.column = null;
+                appSortState.direction = 'asc';
+                clearAppHeaderSortIndicators();
+            } else {
+                // Map dropdown values to header sort columns
+                const columnMapping = {
+                    'id': 'ID',
+                    'name': 'Name', 
+                    'type': 'Type'
+                };
+                
+                appSortState.column = columnMapping[selectedSort];
+                appSortState.direction = 'asc'; // Default to ascending when changing sort type
+                
+                // Update header sort indicators
+                if (typeof updateAppSortIndicators === 'function') {
+                    updateAppSortIndicators();
+                }
+            }
+        }
+        
+        // Re-run search with new sort order if there are current results
+        if (window.getAppData && window.getAppData.length > 0) {
+            const searchInput = document.getElementById('getAppSearch');
+            if (searchInput && searchInput.value.trim()) {
+                const steamBtn = document.getElementById('steamSearchBtn');
+                if (steamBtn && steamBtn.getAttribute('data-active') === 'true') {
+                    performSteamAPISearch(searchInput.value.trim());
+                }
+            }
+        }
+    });
+}
+
+// Clear all header sorting indicators for app list
+function clearAppHeaderSortIndicators() {
+    // Reset all header styles
+    document.querySelectorAll('[data-app-sort]').forEach(header => {
+        header.style.fontWeight = 'normal';
+        header.style.color = '#f8f9fa'; // text-light
+    });
+    
+    // Remove all existing sort indicators
+    document.querySelectorAll('.app-sort-indicator').forEach(indicator => {
+        indicator.remove();
+    });
+}
+
+// Sync dropdown when header is clicked
+function syncDropdownWithHeader(column) {
+    const sortDropdown = document.getElementById('sortDropdown');
+    if (!sortDropdown) return;
+    
+    // Map header columns to dropdown values
+    const dropdownMapping = {
+        'ID': 'id',
+        'Name': 'name',
+        'Type': 'type'
+    };
+    
+    const dropdownValue = dropdownMapping[column];
+    if (dropdownValue && sortDropdown.value !== dropdownValue) {
+        sortDropdown.value = dropdownValue;
+    }
 }

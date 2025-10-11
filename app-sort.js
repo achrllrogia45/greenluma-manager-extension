@@ -93,6 +93,11 @@ function sortApps(column) {
         appSortState.direction = 'asc';
     }
     
+    // Sync dropdown with header click
+    if (typeof syncDropdownWithHeader === 'function') {
+        syncDropdownWithHeader(column);
+    }
+    
     const sortedApps = getSortedApps(window.getAppData, column, appSortState.direction);
     
     displayAppList(sortedApps);
