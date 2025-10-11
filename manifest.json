@@ -7,15 +7,20 @@
     "default_popup": "index.html",
     "default_title": "GreenLuma Manager"
   },
-  "permissions": [],
-  "host_permissions": [],
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.steampowered.com/*",
+    "https://store.steampowered.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [],
   "web_accessible_resources": [
     {
-      "resources": ["data.json", "main.js", "styles.css", "search.js"],
+      "resources": ["data.json", "main.js", "styles.css", "search.js", "app-sort.js"],
       "matches": ["<all_urls>"]
     }
   ]
