@@ -36,9 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Preload Steam apps list when page loads
     preloadSteamAppsList();
     
-    // Initialize down button functionality
-    initializeDownButton();
-    
     // Initialize sort dropdown functionality
     initializeSortDropdown();
     
@@ -517,6 +514,12 @@ function initializeSearchButtons() {
             if (dualModeSearch) {
                 dualModeSearch.classList.remove('d-block');
                 dualModeSearch.classList.add('d-none');
+            }
+            // Copy text from universal search back to single mode if it exists
+            const universalInput = document.getElementById('getAppSearchUniversal');
+            const searchInput = document.getElementById('getAppSearch');
+            if (universalInput && searchInput && universalInput.value.trim()) {
+                searchInput.value = universalInput.value;
             }
             // Enable single mode button
             const searchBtn = document.getElementById('searchBtn');
@@ -1793,107 +1796,6 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Initialize down button functionality
-function initializeDownButton() {
-    const downBtn = document.querySelector('#downBtn button');
-    if (!downBtn) {
-        console.warn("Down button not found");
-        return;
-    }
-    
-    downBtn.addEventListener('click', function() {
-        moveSelectedAppsToMainList();
-    });
-}
-
-// Move selected apps from search results to main games list
-function moveSelectedAppsToMainList() {
-    if (!appSelectionState.selectedItems || appSelectionState.selectedItems.size === 0) {
-        showNotification("No apps selected", "warning");
-        return;
-    }
-    
-    if (!window.getAppData || window.getAppData.length === 0) {
-        showNotification("No search results available", "warning");
-        return;
-    }
-    
-    // Get selected apps
-    const selectedApps = window.getAppData.filter(app => 
-        appSelectionState.selectedItems.has(app.ID.toString())
-    );
-    
-    if (selectedApps.length === 0) {
-        showNotification("No valid apps selected", "warning");
-        return;
-    }
-    
-    // Get current games data or initialize empty array
-    let currentGames = window.gamesData || [];
-    
-    // Get current priority start value
-    const priorityStartInput = document.getElementById('priorityStart');
-    const priorityStart = priorityStartInput ? parseInt(priorityStartInput.value) || 0 : 0;
-    
-    // Check for duplicates and filter them out
-    const existingIds = new Set(currentGames.map(game => game.ID.toString()));
-    const newApps = selectedApps.filter(app => !existingIds.has(app.ID.toString()));
-    
-    if (newApps.length === 0) {
-        showNotification("All selected apps are already in the main list", "info");
-        return;
-    }
-    
-    // Add new apps with proper priority values
-    const startingPriority = priorityStart + currentGames.length;
-    const appsToAdd = newApps.map((app, index) => ({
-        ID: app.ID,
-        Name: app.Name,
-        Type: app.Type,
-        Priority: startingPriority + index
-    }));
-    
-    // Add to main games list
-    window.gamesData = [...currentGames, ...appsToAdd];
-    
-    // Save to localStorage (using main.js function if available)
-    if (typeof saveGamesData === 'function') {
-        saveGamesData(window.gamesData);
-    }
-    
-    // Refresh main games display (using main.js function if available)
-    if (typeof displayGames === 'function') {
-        const sortedGames = [...window.gamesData].sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
-        displayGames(sortedGames);
-    }
-    
-    // Clear selection in search results
-    appSelectionState.selectedItems.clear();
-    
-    // Update UI to reflect cleared selection
-    document.querySelectorAll('.app-checkbox').forEach(checkbox => {
-        checkbox.checked = false;
-        const row = checkbox.closest('.app-row');
-        if (row && typeof updateAppRowSelection === 'function') {
-            updateAppRowSelection(row, false);
-        }
-    });
-    
-    // Update select all state
-    updateAppSelectAllState();
-    
-    // Show success notification
-    const duplicateCount = selectedApps.length - newApps.length;
-    let message = `Added ${newApps.length} apps to main list`;
-    if (duplicateCount > 0) {
-        message += ` (${duplicateCount} duplicates skipped)`;
-    }
-    
-    showNotification(message, "success");
-    
-    console.log(`Moved ${newApps.length} apps to main list`);
-}
-
 // Initialize sort dropdown functionality
 function initializeSortDropdown() {
     const sortDropdown = document.getElementById('sortDropdown');
@@ -2046,12 +1948,28 @@ function restoreSearchState() {
                         dualModeSearch.classList.add('d-none');
                     }
 
+                    // Copy search text from universal back to single mode if it exists
+                    const universalInput = document.getElementById('getAppSearchUniversal');
+                    if (universalInput && searchInput && universalInput.value.trim()) {
+                        searchInput.value = universalInput.value;
+                    }
+
                     // Enable single mode button
                     if (searchBtn) searchBtn.disabled = false;
                 }
                 
                 searchInfo.style.display = 'block';
                 activeSearchEngine.textContent = searchEngineName;
+                
+                // Show/Hide enter hint: only visible for SteamAPI mode
+                const enterHint = document.getElementById('enterHint');
+                if (enterHint) {
+                    if (savedEngine === 'steamSearchBtn') {
+                        enterHint.style.display = 'block';
+                    } else {
+                        enterHint.style.display = 'none';
+                    }
+                }
             }
         }
     }

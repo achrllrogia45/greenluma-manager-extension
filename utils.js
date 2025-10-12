@@ -168,11 +168,23 @@ async function universalSearch(searchTerm) {
     }
 }
 
+// Generate Steam Store link for app
+function generateSteamStoreLink(appId) {
+    return `https://store.steampowered.com/app/${appId}/`;
+}
+
+// Generate SteamDB link for app
+function generateSteamDBLink(appId) {
+    return `https://steamdb.info/app/${appId}/`;
+}
+
 // Export utilities for use in other files
 window.utils = {
     calculateSimilarity,
     getTopRelevantMatches,
     getAppDetails,
     getDLCNames,
-    universalSearch
+    universalSearch,
+    generateSteamStoreLink,
+    generateSteamDBLink
 };

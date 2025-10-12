@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/; style-src 'self' https://cdn.jsdelivr.net/ 'unsafe-inline'; font-src 'self' https://cdn.jsdelivr.net/; img-src 'self' data:; connect-src 'self' https://api.steampowered.com https://store.steampowered.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/ 'unsafe-inline'; style-src 'self' https://cdn.jsdelivr.net/ 'unsafe-inline'; font-src 'self' https://cdn.jsdelivr.net/; img-src 'self' data:; connect-src 'self' https://api.steampowered.com https://store.steampowered.com;">
     <title>GreenLuma 2024 Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -12,23 +12,27 @@
     <div class="d-flex flex-column h-100" id="main-container">
         <!-- Header -->
         <header class="bg-dark-custom py-1 px-2 border-bottom border-dark-custom">
-            <div class="d-flex w-100 align-items-center justify-content-between" style="gap: 0.5rem;">
-                <!-- Author (left) -->
-                <div class="d-flex flex-column align-items-start" style="min-width: 0;">
-                    <span id="author-name" class="small text-muted-custom">by: Achrllrogia 
-                        <a id="github-link" href="https://github.com/achrllrogia45" target="_blank" rel="noopener noreferrer" title="GitHub" class="m-1 text-muted-custom">
-                        <i class="bi bi-github" aria-hidden="true" style="font-size:0.8rem;"></i>
-                        <span class="visually-hidden">GitHub</span>
-                        </a> 
-                    </span>
-                    
+            <div class="d-flex flex-column w-100 align-items-center" style="gap: 0.5rem;">
+                <!-- Title (top) -->
+                <h1 class="mt-1 fw-bold text-center" style="font-size: 1.5rem;">GreenLuma Manager</h1>
+
+                <!-- Author and Version (bottom) -->
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div class="d-flex flex-column align-items-start" style="min-width: 0;">
+                        <div id="author-name" class="small text-muted-custom ms-2">by: Achrllrogia
+                        </div>
+                        <div>
+                            <a href="https://github.com/achrllrogia45" target="_blank" rel="noopener noreferrer" title="GitHub" class="m-1 text-light text-decoration-none">
+                                <i class="bi bi-github" aria-hidden="true" style="font-size:0.8rem;" title="GitHub"></i>
+                            </a>
+                            <a href="https://steamcommunity.com/id/achrllrogia/" target="_blank" rel="noopener noreferrer" title="Steam" class="m-1 text-light text-decoration-none">
+                                <i class="bi bi-steam" aria-hidden="true" style="font-size:0.8rem;" title="Steam"></i>
+                            </a>
+                            <span class="small text-muted-custom ms-2" style="font-size: 0.8rem;">◤Give me a Bump◢ </span>
+                        </div>
+                    </div>
+                    <span class="small text-muted-custom">v.1</span>
                 </div>
-
-                <!-- Title (center) -->
-                <h1 class="mb-0 small fw-semibold text-center flex-grow-1">GreenLuma Manager</h1>
-
-                <!-- Version (right) -->
-                <span class="small text-muted-custom">v.1</span>
             </div>
         </header>
 
@@ -123,7 +127,7 @@
                     <div>
                         Searching with: <span id="activeSearchEngine">None</span>
                     </div>
-                    <div id="enterHint" title="Press Enter or Search Icon could display&#10;detailed list of DLCs and its Sorting" class="text-muted-important" style="white-space: nowrap; color: #fffb28;">
+                    <div id="enterHint" title="Press Enter or Search Icon could display&#10;detailed list of DLCs and its Sorting" class="text-muted-important" style="white-space: nowrap; color: #fffb28; display: none;">
                         <i class="bi bi-info-circle-fill">
                             Press Enter or Icon for Details
                         </i>
@@ -131,7 +135,10 @@
 
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-1">
-                    <label class="form-label small text-muted-custom mb-0">Get App List</label>
+                    <div>
+                        <i class="bi bi-info-circle-fill text-info me-2" title="AppList from Selected Servers"></i>
+                        <label class="form-label small text-info mb-0">Get App List</label>
+                    </div>
                     
                     <!-- Selection notification popup -->
                     <div id="selectionNotification" class="px-3 py-1 bg-dark text-light rounded-pill small text-center" style="z-index: 1000; opacity: 0; transition: opacity 0.3s ease; background-color: rgba(33, 37, 41, 0.6) !important; backdrop-filter: blur(4px); font-size: 0.75rem; white-space: nowrap; pointer-events: none;">
@@ -201,11 +208,11 @@
                     </div>
                 </div>
                 <!-- Minimalist down arrow button with side lines -->
-                <div  id="downBtn" class="d-flex align-items-center justify-content-center mt-1" style="width: 100%;">
+                <div id="downBtn" class="d-flex align-items-center justify-content-center mt-1" style="width: 100%; cursor: pointer; padding: 4px 0;" title="Move selected games down to main list">
                     <div class="arrow-side-line"></div>
-                    <button  id="downBtn" class="btn btn-link text-muted p-1 mx-2" style="font-size: 0.8rem; line-height: 1; border: none; background: none;" title="Move selected games down to main list">
+                    <div class="p-1 mx-2" style="font-size: 0.8rem; line-height: 1; color: #6c757d;">
                         <i class="bi bi-chevron-down"></i>
-                    </button>
+                    </div>
                     <div class="arrow-side-line"></div>
                 </div>
             </div>
@@ -235,8 +242,10 @@
             <!-- Games List Section -->
             <div class="p-2 d-flex flex-column" id="gamesSection" style="min-height: 150px; flex: 1 1 auto;">
                 <div class="d-flex align-items-center justify-content-between mb-1">
-                    <label class="form-label small text-muted-custom mb-0">Games List</label>
-                    
+                    <div>
+                        <i class="bi bi-info-circle-fill text-info me-2" title="Imported AppList from above"></i>
+                    <label class="form-label small text-info mb-0">Games List</label>
+                    </div>
                     <!-- Selection notification popup -->
                     <div id="gamesSelectionNotification" class="px-3 py-1 bg-dark text-light rounded-pill small text-center" style="z-index: 1000; opacity: 0; transition: opacity 0.3s ease; background-color: rgba(33, 37, 41, 0.6) !important; backdrop-filter: blur(4px); font-size: 0.75rem; white-space: nowrap; pointer-events: none;">
                         <span id="gamesSelectionCount">0</span> selected
@@ -283,17 +292,17 @@
                             </div>
                             <!-- List Content -->
                             <div id="gamesList" class="w-100">
-                              <!-- Games will be loaded from data.json -->
+                              <!-- Games will be populated via Down Button from Get App List -->
                             </div>
                         </div>
                     </div>
                 </div>
                 <!-- Minimalist clear button with side lines -->
-                <div  id="clearBtn" class="d-flex align-items-center justify-content-center mt-1" style="width: 100%;">
+                <div id="clearBtnContainer" class="d-flex align-items-center justify-content-center mt-1 text-muted" style="width: 100%; cursor: pointer;" role="button" tabindex="0" title="Clear selected games">
                     <div class="arrow-side-line"></div>
-                    <button  id="clearBtn" class="btn btn-link text-muted p-1 mx-2" style="font-size: 0.8rem; line-height: 1; border: none; background: none;" title="Clear selected games">
+                    <span class="d-flex align-items-center justify-content-center mx-2" style="font-size: 0.7rem; line-height: 1; pointer-events: none;">
                         <i class="bi bi-x-lg"></i>
-                    </button>
+                    </span>
                     <div class="arrow-side-line"></div>
                 </div>
             </div>
@@ -304,46 +313,58 @@
         <footer class="bg-dark-custom p-2 border-top border-dark-custom">
             <!-- Import/Export Section -->
             <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-info-circle-fill text-info me-2" title="Rename and Export/Import to local storage as '.json'"></i>
               <input 
                 type="text" 
                 id="folderPath" 
-                placeholder="Name your data list.json"
+                placeholder="Save your AppList eg. Furry Futa Collection"
                 class="form-control form-control-sm bg-secondary-custom text-light border-0 flex-fill"
                 style="font-size: 0.7rem;"
               >
-              <button id="importBtn" class="btn btn-outline-success btn-sm p-1" title="Import List">
-                <i class="bi bi-download"></i>
+              <button id="importBtn" class="btn btn-outline-primary btn-sm p-1" title="Import List">
+                <i class="bi bi-upload"></i>
               </button>
               <button id="exportBtn" class="btn btn-outline-info btn-sm p-1" title="Export List">
-                <i class="bi bi-upload"></i>
+                <i class="bi bi-download"></i>
               </button>
             </div>
                        
             <!-- Action Buttons -->
             <div class="d-flex align-items-center justify-content-between">
 
-                <!-- <button id="settingsBtn" class="btn btn-outline-secondary btn-sm p-1">
-                    <i class="bi bi-gear"></i>
-                </button> -->
+                <div class="action-buttons-container">
 
-                <div class="d-flex align-items-center gap-2">
-                    
-                    <button id="generateBtn" class="btn btn-success btn-sm-custom">
-                        Generate
-                    </button>
-                    
-                    <button id="copyBtn" class="btn btn-info btn-sm-custom" title="Copy to clipboard">
-                        <i class="bi bi-clipboard"></i>
-                    </button>
-                    
-                    <button id="downloadBtn" class="btn btn-primary btn-sm-custom" title="Download list">
-                        <i class="bi bi-download"></i>
-                    </button>
-                    
-                    <!-- <button id="runGreenlumaBtn" class="btn btn-primary btn-sm-custom">
-                        Run GreenLuma
+                    <!-- <button id="settingsBtn" class="btn btn-sm btn-light ms-2" title="Settings" style="border-radius: 50%; width: 22px; height: 22px; padding: 0;">
+                        <i class="bi bi-gear"></i>
                     </button> -->
+
+                    <button id="generateBtn" class="action-btn action-btn-primary me-1 ms-2" title="Generate">
+                        <i class="bi bi-play-fill"></i>
+                        <span>Generate</span>
+                    </button>
                     
+                    <div class="action-btn-group">
+                        <button id="copyBtn" class="action-btn action-btn-light" title="Copy to clipboard">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        
+                        <div class="btn-group">
+                            <button id="downloadBtn" class="action-btn action-btn-light dropdown-toggle" type="button" aria-expanded="false" title="Download options">
+                                <i class="bi bi-download"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end bg-dark-custom">
+                                <li><a class="dropdown-item text-light" href="#" id="downloadAppListBtn">
+                                    <i class="bi bi-file-earmark-text me-2"></i>Download AppList.txt
+                                </a></li>
+                                <li><a class="dropdown-item text-light" href="#" id="downloadZipBtn">
+                                    <i class="bi bi-file-earmark-zip me-2"></i>Download as .zip
+                                </a></li>
+                                <li><a class="dropdown-item text-light" href="#" id="downloadBatBtn">
+                                    <i class="bi bi-file-earmark-code me-2"></i>Download as .bat
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="small text-muted">v1.3.0</div>
          </div>
@@ -356,8 +377,11 @@
         <span class="visually-hidden">Resize</span>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="main.js"></script>
     <script src="app-sort.js"></script>
+    <script src="utils.js"></script>
     <script src="search.js"></script>
+    <script src="generator.js"></script>
 </body>
 </html>

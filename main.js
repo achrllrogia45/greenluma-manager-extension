@@ -1,9 +1,9 @@
-// Load games data from JSON
+// Load games data from localStorage only (no data.json fallback)
 async function loadGamesData() {
     console.log("loadGamesData called");
     
     try {
-        // Try to load from localStorage first for persistence
+        // Load from localStorage only
         const savedGames = localStorage.getItem('gamesData');
         let games = [];
         
@@ -11,14 +11,24 @@ async function loadGamesData() {
             try {
                 games = JSON.parse(savedGames);
                 console.log("Loaded games from localStorage:", games.length);
+                
+                // Ensure backward compatibility: add missing links for existing games
+                games = games.map(game => ({
+                    ID: game.ID,
+                    Name: game.Name,
+                    Type: game.Type,
+                    Priority: game.Priority,
+                    SteamStoreLink: game.SteamStoreLink || (window.utils ? window.utils.generateSteamStoreLink(game.ID) : `https://store.steampowered.com/app/${game.ID}/`),
+                    SteamDBLink: game.SteamDBLink || (window.utils ? window.utils.generateSteamDBLink(game.ID) : `https://steamdb.info/app/${game.ID}/`)
+                }));
+                
             } catch (parseError) {
                 console.error("Error parsing saved games data:", parseError);
-                // If parsing fails, try to load from data.json
-                games = await loadGamesFromDataJson();
+                games = []; // Reset to empty array if parsing fails
             }
         } else {
-            // Fall back to data.json if no saved data
-            games = await loadGamesFromDataJson();
+            console.log("No saved games found in localStorage, starting with empty list");
+            games = []; // Start with empty array
         }
         
         // Validate games array
@@ -36,6 +46,31 @@ async function loadGamesData() {
         const priorityStartInput = document.getElementById('priorityStart');
         if (priorityStartInput) {
             priorityStartInput.value = priorityStart;
+        }
+        
+        // Handle empty games list
+        if (games.length === 0) {
+            console.log("No games data available, displaying empty state");
+            window.gamesData = [];
+            
+            // Reset generated flag since list is empty
+            if (typeof resetGeneratedFlag === 'function') {
+                resetGeneratedFlag();
+            }
+            
+            // Display empty state message
+            const gamesList = document.getElementById('gamesList');
+            if (gamesList) {
+                gamesList.innerHTML = '<div class="text-muted small p-3 text-center">No games added yet. Use "Get App List" to search and add games with the Down button.</div>';
+            }
+            
+            // Set initial sort state
+            sortState.column = 'Priority';
+            sortState.direction = 'asc';
+            updateSortIndicators();
+            
+            console.log("Empty games list initialized");
+            return;
         }
         
         // Deep clone to avoid mutation issues
@@ -75,6 +110,11 @@ async function loadGamesData() {
         window.gamesData = sortedGames;
         console.log("Stored", window.gamesData.length, "games in window.gamesData");
         
+        // Reset generated flag since list has changed
+        if (typeof resetGeneratedFlag === 'function') {
+            resetGeneratedFlag();
+        }
+        
         // Save to ensure priorities are persisted
         saveGamesData(window.gamesData);
         
@@ -97,25 +137,6 @@ async function loadGamesData() {
         if (gamesList) {
             gamesList.innerHTML = '<div class="text-muted small p-2">Error loading games data</div>';
         }
-    }
-}
-
-// Helper function to load games from data.json
-async function loadGamesFromDataJson() {
-    try {
-        console.log("Attempting to load games from data.json");
-        const response = await fetch('data.json');
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data.json: ${response.status} ${response.statusText}`);
-        }
-        
-        const games = await response.json();
-        console.log("Loaded", games.length, "games from data.json");
-        return games;
-    } catch (error) {
-        console.error('Error loading data.json:', error);
-        return [];
     }
 }
 
@@ -870,8 +891,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize priority start functionality
     initializePriorityStart();
     
-    // Initialize clipboard and download functionality
-    initializeClipboardAndDownload();
     // Initialize clear button (remove selected games)
     initializeClearButton();
     
@@ -1115,133 +1134,6 @@ function applyPriorityStart() {
         btn.classList.add('btn-outline-secondary');
     }, 1000);
 }
-
-// Get default GreenLuma path based on OS
-function getDefaultGreenLumaPath() {
-    // Common default paths for GreenLuma
-    const isWindows = navigator.platform.indexOf('Win') > -1;
-    
-    if (isWindows) {
-        return 'C:\\GreenLuma\\';
-    } else {
-        return '~/GreenLuma/';
-    }
-}
-
-// Initialize clipboard and download functionality
-function initializeClipboardAndDownload() {
-    console.log("Initializing clipboard and download functionality");
-    
-    const copyBtn = document.getElementById('copyBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
-    
-    if (copyBtn) {
-        copyBtn.addEventListener('click', function() {
-            copyGamesListToClipboard();
-        });
-    } else {
-        console.warn("Copy button not found");
-    }
-    
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', function() {
-            downloadGamesList();
-        });
-    } else {
-        console.warn("Download button not found");
-    }
-}
-
-// Copy games list to clipboard in a formatted way
-function copyGamesListToClipboard() {
-    console.log("Copying games list to clipboard");
-    
-    if (!window.gamesData || window.gamesData.length === 0) {
-        console.warn("No games data to copy");
-        showNotification("No games to copy", "warning");
-        return;
-    }
-    
-    try {
-        // Sort games by priority before copying
-        const sortedGames = [...window.gamesData].sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
-        
-        // Format the games data as a text string
-        let clipboardText = "GreenLuma Games List\n";
-        clipboardText += "----------------------\n";
-        
-        sortedGames.forEach(game => {
-            clipboardText += `${game.Priority}. ${game.Name} (ID: ${game.ID}, Type: ${game.Type})\n`;
-        });
-        
-        // Copy to clipboard using the Clipboard API
-        navigator.clipboard.writeText(clipboardText)
-            .then(() => {
-                console.log("Games list copied to clipboard");
-                showNotification("Copied to clipboard!", "success");
-            })
-            .catch(err => {
-                console.error("Failed to copy games list:", err);
-                showNotification("Failed to copy to clipboard", "danger");
-            });
-    } catch (error) {
-        console.error("Error copying games list:", error);
-        showNotification("Error copying to clipboard", "danger");
-    }
-}
-
-// Download games list as JSON file
-function downloadGamesList() {
-    console.log("Downloading games list");
-    
-    if (!window.gamesData || window.gamesData.length === 0) {
-        console.warn("No games data to download");
-        showNotification("No games to download", "warning");
-        return;
-    }
-    
-    try {
-        // Sort games by priority before downloading
-        const sortedGames = [...window.gamesData].sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
-        
-        // Convert to JSON string with nice formatting
-        const jsonString = JSON.stringify(sortedGames, null, 2);
-        
-        // Create a Blob with the JSON data
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        
-        // Create a download link
-        const downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(blob);
-        
-        // Get filename from the folderPath input or use default
-        const folderPathInput = document.getElementById('folderPath');
-        let filename = 'greenluma_games_list.json';
-        
-        if (folderPathInput && folderPathInput.value.trim()) {
-            filename = folderPathInput.value.trim();
-            // Add .json extension if not present
-            if (!filename.toLowerCase().endsWith('.json')) {
-                filename += '.json';
-            }
-        }
-        
-        downloadLink.download = filename;
-        
-        // Append to body, trigger click, then remove
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-        console.log(`Games list downloaded as ${filename}`);
-        showNotification(`Downloaded as ${filename}`, "success");
-    } catch (error) {
-        console.error("Error downloading games list:", error);
-        showNotification("Error downloading games list", "danger");
-    }
-}
-
-
 
 // Initialize resize functionality
 function initializeResize() {
@@ -1609,14 +1501,77 @@ function initializeHorizontalPanelResize() {
 
 // Initialize clear button functionality (removes selected games from main list)
 function initializeClearButton() {
-    const clearBtn = document.querySelector('#clearBtn button');
-    if (!clearBtn) {
-        console.warn('Clear button not found');
+    const clearBtnContainer = document.getElementById('clearBtnContainer');
+    if (!clearBtnContainer) {
+        console.warn('Clear button container not found');
         return;
     }
 
-    clearBtn.addEventListener('click', function() {
-        clearSelectedGames();
+    // Confirmation state
+    let confirmActive = false;
+    let confirmTimer = null;
+    const originalHTML = clearBtnContainer.innerHTML;
+    const originalTitle = clearBtnContainer.title || '';
+
+    function revertButton() {
+        confirmActive = false;
+        if (confirmTimer) {
+            clearTimeout(confirmTimer);
+            confirmTimer = null;
+        }
+        // Restore original state
+        clearBtnContainer.innerHTML = originalHTML;
+        clearBtnContainer.classList.remove('text-warning', 'confirming');
+        clearBtnContainer.classList.add('text-muted');
+        clearBtnContainer.title = originalTitle;
+        clearBtnContainer.classList.remove('expanded');
+    }
+
+    clearBtnContainer.addEventListener('click', function() {
+        try {
+            // If not currently in confirm mode, enter confirm mode
+            if (!confirmActive) {
+                // If nothing selected, keep current behavior and notify
+                if (!selectionState.selectedItems || selectionState.selectedItems.size === 0) {
+                    showNotification('No games selected', 'warning');
+                    return;
+                }
+
+                confirmActive = true;
+                // Visual change: show text and warning color
+                clearBtnContainer.classList.remove('text-muted');
+                clearBtnContainer.classList.add('text-warning');
+                clearBtnContainer.innerHTML = `
+                    <div class="arrow-side-line"></div>
+                    <span class="d-flex align-items-center justify-content-center mx-2" style="font-size: 0.7rem; line-height: 1; pointer-events: none;">
+                        ARE YOU SURE?
+                    </span>
+                    <div class="arrow-side-line"></div>
+                `;
+                clearBtnContainer.title = 'Click again within 2s to confirm deletion';
+                clearBtnContainer.classList.add('confirming', 'expanded');
+
+                // Revert after 2 seconds if not confirmed
+                confirmTimer = setTimeout(() => {
+                    revertButton();
+                }, 2000);
+            } else {
+                // Confirmed: perform delete immediately
+                if (confirmTimer) {
+                    clearTimeout(confirmTimer);
+                    confirmTimer = null;
+                }
+
+                // Call existing removal logic
+                clearSelectedGames();
+
+                // Revert button back to original state
+                revertButton();
+            }
+        } catch (err) {
+            console.error('Error handling clear button confirmation:', err);
+            revertButton();
+        }
     });
 }
 
@@ -1638,6 +1593,11 @@ function clearSelectedGames() {
     window.gamesData = window.gamesData.filter(game => !toRemove.has(game.ID.toString()));
 
     const removedCount = beforeCount - window.gamesData.length;
+    
+    // Reset generated flag since list has changed
+    if (typeof resetGeneratedFlag === 'function') {
+        resetGeneratedFlag();
+    }
 
     if (removedCount === 0) {
         showNotification('No matching games found to remove', 'warning');

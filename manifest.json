@@ -20,7 +20,7 @@
   "content_scripts": [],
   "web_accessible_resources": [
     {
-      "resources": ["data.json", "main.js", "styles.css", "search.js", "app-sort.js"],
+      "resources": ["main.js", "styles.css", "search.js", "app-sort.js", "utils.js", "generator.js"],
       "matches": ["<all_urls>"]
     }
   ]
