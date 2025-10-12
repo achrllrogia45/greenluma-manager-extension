@@ -11,21 +11,49 @@
 <body class="bg-dark text-light">
     <div class="d-flex flex-column h-100" id="main-container">
         <!-- Header -->
-        <header class="bg-dark-custom py-2 px-3 border-bottom border-dark-custom">
-            <h1 class="text-center mb-0 fs-6 fw-semibold">GreenLuma Manager</h1>
+        <header class="bg-dark-custom py-1 px-2 border-bottom border-dark-custom">
+            <div class="d-flex w-100 align-items-center justify-content-between" style="gap: 0.5rem;">
+                <!-- Author (left) -->
+                <div class="d-flex flex-column align-items-start" style="min-width: 0;">
+                    <span id="author-name" class="small text-muted-custom">by: Achrllrogia 
+                        <a id="github-link" href="https://github.com/achrllrogia45" target="_blank" rel="noopener noreferrer" title="GitHub" class="m-1 text-muted-custom">
+                        <i class="bi bi-github" aria-hidden="true" style="font-size:0.8rem;"></i>
+                        <span class="visually-hidden">GitHub</span>
+                        </a> 
+                    </span>
+                    
+                </div>
+
+                <!-- Title (center) -->
+                <h1 class="mb-0 small fw-semibold text-center flex-grow-1">GreenLuma Manager</h1>
+
+                <!-- Version (right) -->
+                <span class="small text-muted-custom">v.1</span>
+            </div>
         </header>
 
         <!-- Main Content -->
         <div class="flex-fill d-flex flex-column overflow-hidden">
             <!-- Button Section -->
             <div class="p-2 border-bottom border-dark-custom">
-                <div class="d-flex gap-2">
-                    <button id="steamSearchBtn" class="btn btn-secondary btn-sm-custom flex-fill" data-active="false" data-search-url="https://store.steampowered.com/search/?term=">
-                      <i class="bi bi-steam"></i> Steam
-                    </button>
-                    <button id="steamdbSearchBtn" class="btn btn-secondary btn-sm-custom flex-fill" data-active="false" data-search-url="https://steamdb.info/search/?q=">
-                      <i class="bi bi-database"></i> SteamDB
-                    </button>
+                <div class="d-flex align-items-center" style="gap: 0;">
+                    <!-- Left side: 2 buttons -->
+                    <div class="d-flex flex-fill gap-2" style="max-width: 50%;">
+                        <button id="steamSearchBtn" class="btn btn-secondary btn-sm-custom flex-fill" title="Search using SteamAPI" data-active="false" data-search-url="https://store.steampowered.com/search/?term=">
+                            <i class="bi bi-steam"></i> SteamAPI
+                        </button>
+                        <button id="steamstoreSearchBtn" class="btn btn-secondary btn-sm-custom flex-fill" title="Search using Steam Store" data-active="false" data-search-url="https://store.steampowered.com/search/?term=">
+                            <i class="bi bi-steam"></i> Steam Store
+                        </button>
+                    </div>
+                    <!-- Vertical divider -->
+                    <div style="width: 1px; height: 32px; background: #6c757d; margin: 0 12px;"></div>
+                    <!-- Right side: 1 button -->
+                    <div class="d-flex flex-fill" style="max-width: 50%;">
+                        <button id="steamdbSearchBtn" class="btn btn-secondary btn-sm-custom w-100" title="Manually via SteamDB" data-active="false" data-search-url="https://steamdb.info/search/?q=">
+                            <i class="bi bi-database"></i> SteamDB
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -53,6 +81,31 @@
                 <div class="d-flex align-items-center justify-content-between mb-1">
                     <label class="form-label small text-muted-custom mb-0">Get App List</label>
                     <div class="d-flex align-items-center gap-2">
+                        <!-- Type filter: label + dropdown showing only current value (click value to toggle) -->
+                        <span class="small text-muted-custom" style="font-size: 0.7rem;">Type:</span>
+                        <div class="dropdown" style="position: relative; z-index: 1050;">
+                            <button id="typeFilterBtn" class="btn btn-sm btn-secondary bg-secondary-custom text-light border-0 d-flex align-items-center" type="button" aria-expanded="false" style="font-size: 0.7rem; padding: 2px 6px; cursor: pointer; position: relative; z-index: 1051;">
+                                <span id="typeFilterValue" style="font-size:0.7rem;">(All)</span>
+                                <i class="bi bi-caret-down-fill ms-2" style="font-size: 0.7rem;"></i>
+                            </button>
+                            <ul id="typeFilterDropdown" class="dropdown-menu dropdown-menu-end p-2 bg-dark-custom text-light" style="min-width: 140px; z-index: 1051;">
+                                <li>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="Game" id="filterGame" checked>
+                                        <label class="form-check-label small text-light" for="filterGame" style="font-size: 0.8rem;">Game</label>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input" type="checkbox" value="DLC" id="filterDLC" checked>
+                                        <label class="form-check-label small text-light" for="filterDLC" style="font-size: 0.8rem;">DLC</label>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider bg-secondary-custom"></li>
+                                <!-- Apply button removed: filter applies immediately when checkboxes change -->
+                            </ul>
+                        </div>
+
                         <span class="small text-muted-custom" style="font-size: 0.7rem;">Sort by:</span>
                         <select id="sortDropdown" class="form-select form-select-sm bg-secondary-custom text-light border-0" style="width: auto; font-size: 0.7rem; padding: 2px 6px;">
                             <option value="relevance">Relevance</option>
@@ -171,9 +224,15 @@
                         </div>
                     </div>
                 </div>
-                <button id="removeGamesBtn" class="btn btn-secondary btn-sm w-100 mt-2">
-                    Remove Games
-                </button>
+                <!-- Minimalist clear button with side lines -->
+                <div  id="clearBtn" class="d-flex align-items-center justify-content-center mt-1" style="width: 100%;">
+                    <div class="arrow-side-line"></div>
+                    <button  id="clearBtn" class="btn btn-link text-muted p-1 mx-2" style="font-size: 0.8rem; line-height: 1; border: none; background: none;" title="Clear selected games">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    <div class="arrow-side-line"></div>
+                </div>
+            </div>
             </div>
         </div>
 
@@ -198,9 +257,11 @@
                        
             <!-- Action Buttons -->
             <div class="d-flex align-items-center justify-content-between">
-                <button id="settingsBtn" class="btn btn-outline-secondary btn-sm p-1">
+                
+                <!-- <button id="settingsBtn" class="btn btn-outline-secondary btn-sm p-1">
                     <i class="bi bi-gear"></i>
-                </button>
+                </button> -->
+
                 <div class="d-flex align-items-center gap-2">
                     
                     <button id="generateBtn" class="btn btn-success btn-sm-custom">
@@ -218,9 +279,10 @@
                     <!-- <button id="runGreenlumaBtn" class="btn btn-primary btn-sm-custom">
                         Run GreenLuma
                     </button> -->
+                    
                 </div>
                 <div class="small text-muted">v1.3.0</div>
-            </div>
+         </div>
         </footer>
     </div>
 

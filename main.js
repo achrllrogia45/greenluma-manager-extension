@@ -846,6 +846,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize clipboard and download functionality
     initializeClipboardAndDownload();
+    // Initialize clear button (remove selected games)
+    initializeClearButton();
     
     // Initialize resize functionality
     initializeResize();
@@ -915,18 +917,6 @@ function initializePath() {
         localStorage.setItem('greenlumaPath', this.value);
     });
     
-    const defaultPathBtn = document.getElementById('defaultPathBtn');
-    if (!defaultPathBtn) {
-        console.warn("Could not find defaultPathBtn element");
-        return;
-    }
-    
-    // Handle default path button
-    defaultPathBtn.addEventListener('click', function() {
-        const defaultPath = getDefaultGreenLumaPath();
-        folderPathInput.value = defaultPath;
-        localStorage.setItem('greenlumaPath', defaultPath);
-    });
 }
 
 // Priority start functionality
@@ -1412,7 +1402,7 @@ function stopResize() {
     // Restore normal behavior
     document.body.style.userSelect = '';
     document.body.classList.remove('resizing');
-    
+     
     // Remove global event listeners
     document.removeEventListener('mousemove', handleResize);
     document.removeEventListener('mouseup', stopResize);
@@ -1589,4 +1579,63 @@ function initializeHorizontalPanelResize() {
     });
     
     console.log("Horizontal panel resize functionality initialized");
+}
+
+// Initialize clear button functionality (removes selected games from main list)
+function initializeClearButton() {
+    const clearBtn = document.querySelector('#clearBtn button');
+    if (!clearBtn) {
+        console.warn('Clear button not found');
+        return;
+    }
+
+    clearBtn.addEventListener('click', function() {
+        clearSelectedGames();
+    });
+}
+
+// Remove selected games from window.gamesData and refresh UI
+function clearSelectedGames() {
+    if (!selectionState.selectedItems || selectionState.selectedItems.size === 0) {
+        showNotification('No games selected', 'warning');
+        return;
+    }
+
+    if (!window.gamesData || window.gamesData.length === 0) {
+        showNotification('No games to remove', 'warning');
+        return;
+    }
+
+    const toRemove = new Set(selectionState.selectedItems);
+    const beforeCount = window.gamesData.length;
+
+    window.gamesData = window.gamesData.filter(game => !toRemove.has(game.ID.toString()));
+
+    const removedCount = beforeCount - window.gamesData.length;
+
+    if (removedCount === 0) {
+        showNotification('No matching games found to remove', 'warning');
+        return;
+    }
+
+    // Reassign sequential priorities starting from saved priorityStart
+    const startValue = parseInt(localStorage.getItem('priorityStart')) || 0;
+    window.gamesData.sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
+    window.gamesData.forEach((g, i) => {
+        g.Priority = startValue + i;
+    });
+
+    // Persist and refresh
+    saveGamesData(window.gamesData);
+
+    // Clear selection state
+    selectionState.selectedItems.clear();
+    selectionState.lastSelectedIndex = -1;
+
+    // Redisplay games sorted by priority
+    const sortedGames = [...window.gamesData].sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
+    displayGames(sortedGames);
+    updateSelectAllState();
+
+    showNotification(`Removed ${removedCount} games`, 'success');
 }

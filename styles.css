@@ -289,6 +289,30 @@ body {
   color: #198754 !important;
 }
 
+/* Mirror styles for clear button */
+#clearBtn {
+    transition: all 0.2s ease;
+    opacity: 0.8;
+    width: 40px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff !important;
+    font-size: 2rem; /* Make icon bigger */
+}
+
+#clearBtn:hover {
+    opacity: 1;
+    color: #ffffff !important;
+    transform: translateY(1px);
+}
+
+#clearBtn:active {
+    transform: translateY(2px);
+    color: #dc3545 !important; /* red on active */
+}
+
 /* White line strips on sides of arrow */
 .arrow-side-line {
   flex: 1;
@@ -301,6 +325,9 @@ body {
 /* Hover effect for the entire arrow container */
 .d-flex:has(#downBtn):hover .arrow-side-line {
   opacity: 1;
+}
+.d-flex:has(#clearBtn):hover .arrow-side-line {
+    opacity: 1;
 }
 
 /* Notification Toast */
