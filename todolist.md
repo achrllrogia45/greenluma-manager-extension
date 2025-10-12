@@ -1,5 +1,7 @@
 GreenLuma Manager To-Do List: {
 
+- [+++]  Change all codes to React+Vite environment.
+
 Search engine: {
   Steam API/Store: {
 
