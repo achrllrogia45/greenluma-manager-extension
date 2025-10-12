@@ -709,6 +709,27 @@ function clearAllSelections() {
     });
 }
 
+// Show selection notification
+function showSelectionNotification(count, isGetAppList = false) {
+    const notificationId = isGetAppList ? 'selectionNotification' : 'gamesSelectionNotification';
+    const countId = isGetAppList ? 'selectionCount' : 'gamesSelectionCount';
+    
+    const notification = document.getElementById(notificationId);
+    const countSpan = document.getElementById(countId);
+    
+    if (notification && countSpan) {
+        countSpan.textContent = count;
+        
+        // Show notification
+        notification.style.opacity = '1';
+        
+        // Auto-hide after 2 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+        }, 2000);
+    }
+}
+
 // Update the select all checkbox state
 function updateSelectAllState() {
     const selectAllCheckbox = document.getElementById('selectAll');
@@ -724,6 +745,11 @@ function updateSelectAllState() {
     } else {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = true;
+    }
+    
+    // Show notification for main games list
+    if (selectedCount > 0) {
+        showSelectionNotification(selectedCount, false);
     }
 }
 

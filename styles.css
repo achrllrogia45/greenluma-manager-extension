@@ -1,7 +1,7 @@
 body {
             width: 400px;
             height: 800px; /* Set default height */
-            background-color: #212529;
+            background-color: #14162c;
             color: #f8f9fa;
             min-width: 350px;
             min-height: 400px;
@@ -19,9 +19,10 @@ body {
             display: flex;
             flex-direction: column;
         }
-        .bg-dark-custom { background-color: #1a1d20; }
+        .bg-dark-custom { background-color: #192849; }
         .bg-secondary-custom { background-color: #2d3238; }
-        .text-muted-custom { color: #6c757d; }
+        .text-muted-custom { color: rgb(107, 115, 155); }
+        .text-muted-important { color:  #fffb28 !important; }
         .border-dark-custom { border-color: #495057; }
         .scrollable-table { max-height: 300px; overflow-y: auto; }
         .btn-sm-custom { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
@@ -170,7 +171,7 @@ body {
             background: transparent;
         }
         .resize-handle:hover {
-            background: #6c757d;
+            color: #1ecc89;
         }
  
  #folderPath {
@@ -192,19 +193,29 @@ body {
 /* Resize handle for bottom-right corner */
 .resize-handle-corner {
     position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 25px;
-    height: 25px;
+    bottom: 6px;
+    right: 6px;
+    width: 15px;
+    height: 15px;
     cursor: nwse-resize;
     z-index: 10000;
-    background: linear-gradient(-45deg, #0dcaf0 17px, transparent 17px);
-    opacity: 0.8;
-    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff; /* keep original color */
+    background: transparent;
+    opacity: 0.9;
+    transition: color 0.15s ease, opacity 0.15s ease, transform 0.12s ease;
+}
+
+.resize-handle-corner i {
+    font-size: 0.9rem; /* fit inside 15px box */
+    line-height: 1;
 }
 
 .resize-handle-corner:active {
-    background: linear-gradient(-45deg, #ff6b6b 17px, transparent 17px);
+    color: #d17979; /* active color */
+    transform: scale(0.98);
     opacity: 1;
 }
 
@@ -328,6 +339,30 @@ body {
 }
 .d-flex:has(#clearBtn):hover .arrow-side-line {
     opacity: 1;
+}
+
+/* Remove number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Search bar container styles */
+#searchBarContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+#appIdSearch {
+    flex: 1;
+    min-width: 0;
 }
 
 /* Notification Toast */

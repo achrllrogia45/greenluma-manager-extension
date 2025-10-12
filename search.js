@@ -1,5 +1,12 @@
 // Search functionality for the GreenLuma Manager
 
+/**  
+  Search Engine API References
+    1. https://api.steampowered.com/ISteamApps/GetAppList/v2/
+    2. https://store.steampowered.com/api/appdetails?appids=${appID}
+**/
+
+
 // Steam API cache and data storage
 let steamAppsList = null;
 let steamAppsCache = new Map();
@@ -401,12 +408,22 @@ function restoreSteamStoreCachedResults() {
 function restoreCachedSearchResults() {
     // Restore cached results for both Steam API and Steam Store
     const searchInput = document.getElementById('getAppSearch');
+    const searchInputUniversal = document.getElementById('getAppSearchUniversal');
     const steamBtn = document.getElementById('steamSearchBtn');
     const steamStoreBtn = document.getElementById('steamstoreSearchBtn');
     
-    if (!searchInput) return;
+    // Get search term from appropriate input
+    let searchTerm = '';
+    if (steamBtn && steamBtn.getAttribute('data-active') === 'true') {
+        // For SteamAPI, check the universal search input
+        if (searchInputUniversal) {
+            searchTerm = searchInputUniversal.value.trim();
+        }
+    } else if (searchInput) {
+        // For other engines, use the single search input
+        searchTerm = searchInput.value.trim();
+    }
     
-    const searchTerm = searchInput.value.trim();
     if (!searchTerm) return;
     
     // Try Steam API cache first
@@ -460,59 +477,87 @@ function initializeSearchButtons() {
     
     // Function to toggle button active state
     function toggleSearchButton(btn, otherBtns) {
-        const isActive = btn.getAttribute('data-active') === 'true';
-        
-        // Toggle this button's state
-        btn.setAttribute('data-active', !isActive);
-        
-        // Update button appearance
-        if (!isActive) {
-            // Clear Steam Store cache when switching to a different search engine
-            clearSteamStoreCacheOnSearchChange();
+        // Always activate clicked button and deactivate others (radio button behavior)
+        // Clear Steam Store cache when switching to a different search engine
+        clearSteamStoreCacheOnSearchChange();
             
-            // Activate this button
-            btn.classList.remove('btn-secondary');
-            btn.classList.add('btn-primary');
+        // Activate this button
+        btn.setAttribute('data-active', 'true');
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
             
-            // Get search engine name
-            let searchEngineName = btn.textContent.trim();
-            if (btn.id === 'steamSearchBtn') {
-                searchEngineName += " (Faster)";
-            } else if (btn.id === 'steamstoreSearchBtn') {
-                searchEngineName += " (Slower)";
+        // Switch between single and dual mode based on selected engine
+        const singleModeSearch = document.getElementById('singleModeSearch');
+        const dualModeSearch = document.getElementById('dualModeSearch');
+        const searchBtnUniversal = document.getElementById('searchBtnUniversal');
+        const searchBtnAppID = document.getElementById('searchBtnAppID');
+            
+        if (btn.id === 'steamSearchBtn') {
+            // Switch to dual mode for SteamAPI
+            if (singleModeSearch) singleModeSearch.style.display = 'none';
+            if (dualModeSearch) {
+                dualModeSearch.classList.remove('d-none');
+                dualModeSearch.classList.add('d-block');
             }
+            // Enable dual mode buttons
+            if (searchBtnUniversal) searchBtnUniversal.disabled = false;
+            if (searchBtnAppID) searchBtnAppID.disabled = false;
+            // Copy text from single mode to universal search if it exists
+            const universalInput = document.getElementById('getAppSearchUniversal');
+            const searchInput = document.getElementById('getAppSearch');
+            if (universalInput && searchInput) {
+                universalInput.value = searchInput.value;
+            }
+            // Disable single mode button
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) searchBtn.disabled = true;
+        } else {
+            // Switch to single mode for other engines
+            if (singleModeSearch) singleModeSearch.style.display = 'flex';
+            if (dualModeSearch) {
+                dualModeSearch.classList.remove('d-block');
+                dualModeSearch.classList.add('d-none');
+            }
+            // Enable single mode button
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) searchBtn.disabled = false;
+        }
             
-            // Update search info
+        // Get search engine name
+        let searchEngineName = btn.textContent.trim();
+        if (btn.id === 'steamSearchBtn') {
+            searchEngineName += " (Faster)";
+        } else if (btn.id === 'steamstoreSearchBtn') {
+            searchEngineName += " (Slower)";
+        }
+            
+        // Update search info
+        const searchInfo = document.getElementById('searchInfo');
+        const activeSearchEngine = document.getElementById('activeSearchEngine');
+        if (searchInfo && activeSearchEngine) {
             searchInfo.style.display = 'block';
             activeSearchEngine.textContent = searchEngineName;
-            
-            // Enable search button
-            searchBtn.disabled = false;
-            
-            // Deactivate the other buttons
-            otherBtns.forEach(otherBtn => {
-                otherBtn.setAttribute('data-active', 'false');
-                otherBtn.classList.remove('btn-primary');
-                otherBtn.classList.add('btn-secondary');
-            });
-            
-            // Save active search engine to localStorage
-            localStorage.setItem('activeSearchEngine', btn.id);
-        } else {
-            // Deactivate this button
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-secondary');
-            
-            // Update search info
-            searchInfo.style.display = 'none';
-            activeSearchEngine.textContent = 'None';
-            
-            // Disable search button
-            searchBtn.disabled = true;
-            
-            // Remove from localStorage
-            localStorage.removeItem('activeSearchEngine');
         }
+        
+        // Show/Hide enter hint: only visible for SteamAPI mode
+        const enterHint = document.getElementById('enterHint');
+        if (enterHint) {
+            if (btn.id === 'steamSearchBtn') {
+                enterHint.style.display = 'block';
+            } else {
+                enterHint.style.display = 'none';
+            }
+        }
+            
+        // Deactivate the other buttons
+        otherBtns.forEach(otherBtn => {
+            otherBtn.setAttribute('data-active', 'false');
+            otherBtn.classList.remove('btn-primary');
+            otherBtn.classList.add('btn-secondary');
+        });
+            
+        // Save active search engine to localStorage
+        localStorage.setItem('activeSearchEngine', btn.id);
     }
     
     // Steam button click handler
@@ -535,31 +580,85 @@ function initializeSearchButtons() {
     steamStoreBtn.setAttribute('data-active', 'false');
     steamdbBtn.setAttribute('data-active', 'false');
     searchBtn.disabled = true;
+    
+    // Initialize dual search buttons
+    const searchBtnUniversal = document.getElementById('searchBtnUniversal');
+    const searchBtnAppID = document.getElementById('searchBtnAppID');
+    if (searchBtnUniversal) searchBtnUniversal.disabled = true;
+    if (searchBtnAppID) searchBtnAppID.disabled = true;
 }
 
 // Initialize search input functionality
 function initializeSearchInput() {
     const searchInput = document.getElementById('getAppSearch');
     const searchBtn = document.getElementById('searchBtn');
+    const searchInputUniversal = document.getElementById('getAppSearchUniversal');
+    const searchBtnUniversal = document.getElementById('searchBtnUniversal');
+    const searchInputAppID = document.getElementById('getAppSearchAppID');
+    const searchBtnAppID = document.getElementById('searchBtnAppID');
     
     if (!searchInput || !searchBtn) {
         console.error("Search input or button not found");
         return;
     }
     
-    // Perform search when button is clicked
+    // Perform search when button is clicked (single search bar)
     searchBtn.addEventListener('click', function() {
         performSearch();
     });
     
-    // Also perform search when Enter key is pressed in the search input
+    // Also perform search when Enter key is pressed in the search input (single search bar)
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             performSearch();
         }
     });
     
-    // Filter results as user types (after small delay)
+    // Initialize dual search bar event handlers
+    if (searchInputUniversal && searchBtnUniversal) {
+        // Universal search button click
+        searchBtnUniversal.addEventListener('click', function() {
+            performUniversalSearch();
+        });
+        
+        // Universal search on Enter key
+        searchInputUniversal.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performUniversalSearch();
+            }
+        });
+        
+        // Universal search input handling
+        let universalTypingTimer;
+        searchInputUniversal.addEventListener('input', function() {
+            clearTimeout(universalTypingTimer);
+            universalTypingTimer = setTimeout(filterAppListByUniversalInput, 300);
+            
+            // Save search query to localStorage
+            const query = this.value.trim();
+            if (query) {
+                localStorage.setItem('searchQuery', query);
+            } else {
+                localStorage.removeItem('searchQuery');
+            }
+        });
+    }
+    
+    if (searchInputAppID && searchBtnAppID) {
+        // App ID search button click
+        searchBtnAppID.addEventListener('click', function() {
+            performAppIDSearch();
+        });
+        
+        // App ID search on Enter key
+        searchInputAppID.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performAppIDSearch();
+            }
+        });
+    }
+    
+    // Filter results as user types (after small delay) - for single search bar
     let typingTimer;
     const doneTypingInterval = 300; // ms
     
@@ -616,8 +715,192 @@ async function performSearch() {
         window.open(searchUrl, '_blank');
         showNotification(`Searching for "${searchTerm}" on SteamDB (external)`, "info");
     } else {
-        showNotification("Please select a search engine first", "warning");
+        showNotification("Select a search engine first", "warning");
     }
+}
+
+// Perform universal search (left search bar in SteamAPI mode)
+async function performUniversalSearch() {
+    const searchInput = document.getElementById('getAppSearchUniversal');
+    const getAppList = document.getElementById('getAppList');
+    if (!searchInput || !getAppList) return;
+    
+    const searchTerm = searchInput.value.trim();
+    if (!searchTerm) {
+        getAppList.innerHTML = '<div class="small p-2 text-center" style="color: #ffffff; font-weight: 400; padding: 10px;">Use the search bar above to find apps</div>';
+        return;
+    }
+
+    // Show loading animation
+    getAppList.innerHTML = `<div class="d-flex justify-content-center align-items-center w-100" style="padding: 20px;">
+        <img src="steam.gif" alt="Searching..." title="Searching..." width="64" height="64" style="opacity: 0.8;">
+    </div>`;
+
+    try {
+        // Use the new universal search from utils.js
+        const searchResult = await window.utils.universalSearch(searchTerm);
+        
+        if (!searchResult.success) {
+            getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;"><i class="bi bi-search me-2"></i>No matching apps found</div>';
+            showNotification(searchResult.message || 'No matching apps found', "warning");
+            return;
+        }
+
+        // Update global app data and display results
+        window.getAppData = searchResult.results;
+        displayAppList(searchResult.results);
+
+        // Show success notification
+        const mainAppsCount = searchResult.results.filter(r => r.Type !== 'DLC').length;
+        const dlcsCount = searchResult.results.filter(r => r.Type === 'DLC').length;
+        showNotification(
+            `Found ${mainAppsCount} apps with ${dlcsCount} DLCs`,
+            "success"
+        );
+
+        // Cache the results
+        saveSearchResultsToCache(searchTerm, searchResult.results);
+
+    } catch (error) {
+        console.error('Error in universal search:', error);
+        getAppList.innerHTML = '<div class="small p-2 text-center w-100 text-danger" style="font-weight: 400; padding: 10px;"><i class="bi bi-exclamation-triangle-fill me-2"></i>Error searching Steam</div>';
+        
+        if (error.message.includes('CORS') || error.name === 'TypeError') {
+            showNotification("CORS restriction: Consider running as browser extension or using proxy", "warning");
+        } else {
+            showNotification("Error searching Steam", "danger");
+        }
+    }
+}
+
+// Perform App ID search (right search bar in SteamAPI mode)
+async function performAppIDSearch() {
+    const searchInput = document.getElementById('getAppSearchAppID');
+    if (!searchInput) return;
+    
+    const appID = searchInput.value.trim();
+    if (!appID || isNaN(appID)) {
+        showNotification("Enter a valid App ID sir!", "warning");
+        return;
+    }
+    
+    console.log(`Performing App ID search for: ${appID}`);
+    
+    // Show loading animation
+    const getAppList = document.getElementById('getAppList');
+    if (getAppList) {
+        getAppList.innerHTML = `<div class="d-flex justify-content-center align-items-center w-100" style="padding: 20px;">
+            <img src="steam.gif" alt="Searching App ID..." title="Searching App ID..." width="64" height="64" style="opacity: 0.8;">
+        </div>`;
+    }
+    
+    try {
+        // Step 1: Fetch app details from Steam Store API
+        const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appID}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const appData = data[appID];
+        
+        if (!appData || !appData.success) {
+            if (getAppList) {
+                getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;"><i class="bi bi-search me-2"></i>App ID not found</div>';
+            }
+            showNotification(`App ID ${appID} not found`, "warning");
+            return;
+        }
+        
+        const gameInfo = appData.data;
+        const results = [];
+        
+        // Add the main game/app
+        results.push({
+            ID: gameInfo.steam_appid.toString(),
+            Name: gameInfo.name,
+            Type: gameInfo.type.charAt(0).toUpperCase() + gameInfo.type.slice(1)
+        });
+        
+        // Step 2: If there are DLCs, fetch their details from Steam Apps List
+        if (gameInfo.dlc && gameInfo.dlc.length > 0) {
+            console.log(`Found ${gameInfo.dlc.length} DLCs, fetching their details...`);
+            
+            // Ensure Steam apps list is loaded
+            if (!steamAppsList) {
+                if (isLoadingSteamApps) {
+                    showNotification("Loading Steam apps list, please wait...", "info");
+                    while (isLoadingSteamApps) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                } else {
+                    showNotification("Loading Steam apps list...", "info");
+                    await preloadSteamAppsList();
+                }
+            }
+            
+            if (steamAppsList && steamAppsList.length > 0) {
+                // Create a map for faster lookup
+                const appsMap = new Map(steamAppsList.map(app => [app.appid, app.name]));
+                
+                // Add DLCs to results
+                gameInfo.dlc.forEach(dlcId => {
+                    const dlcName = appsMap.get(dlcId);
+                    if (dlcName) {
+                        results.push({
+                            ID: dlcId.toString(),
+                            Name: dlcName,
+                            Type: 'DLC'
+                        });
+                    }
+                });
+                
+                console.log(`Added ${gameInfo.dlc.length} DLCs to results`);
+            } else {
+                showNotification("Could not load Steam apps list for DLC details", "warning");
+            }
+        }
+        
+        // Apply type filter to results
+        const finalResults = applyTypeFilterToResults(results);
+        
+        // Update window.getAppData and display results
+        window.getAppData = finalResults;
+        displayAppList(finalResults);
+        
+        showNotification(`Found ${results.length} items for App ID ${appID} (${gameInfo.name})`, "success");
+        
+    } catch (error) {
+        console.error('Error fetching app details:', error);
+        if (getAppList) {
+            getAppList.innerHTML = '<div class="small p-2 text-center w-100 text-danger" style="font-weight: 400; padding: 10px;"><i class="bi bi-exclamation-triangle-fill me-2"></i>Error fetching app details</div>';
+        }
+        
+        if (error.message.includes('CORS') || error.name === 'TypeError') {
+            showNotification("CORS restriction: Consider running as browser extension or using proxy", "warning");
+        } else {
+            showNotification("Error fetching app details", "danger");
+        }
+    }
+}
+
+// Filter app list by universal input (for the left search bar in SteamAPI mode)
+function filterAppListByUniversalInput() {
+    const searchInput = document.getElementById('getAppSearchUniversal');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.trim();
+    
+    if (!searchTerm) {
+        const getAppList = document.getElementById('getAppList');
+        if (getAppList) {
+            getAppList.innerHTML = '<div class="small p-2 text-center" style="color: #ffffff; font-weight: 400; padding: 10px;">Use the search bar above to find apps</div>';
+        }
+        return;
+    }
+    
+    // Perform a new search instead of filtering existing results
+    performSteamAPISearch(searchTerm);
 }
 
 // Perform Steam API search and display results
@@ -644,10 +927,12 @@ async function performSteamAPISearch(searchTerm) {
     // If no cache, proceed with API search
     console.log(`No cache found, proceeding with API search for: "${searchTerm}"`);
     
-    // Show loading message
+    // Show loading animation
     const getAppList = document.getElementById('getAppList');
     if (getAppList) {
-        getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;">Searching Steam API...</div>';
+        getAppList.innerHTML = `<div class="d-flex justify-content-center align-items-center w-100" style="padding: 20px;">
+            <img src="steam.gif" alt="Searching Steam API..." title="Searching Steam API..." width="64" height="64" style="opacity: 0.8;">
+        </div>`;
     }
     
     // Ensure Steam apps list is loaded
@@ -666,7 +951,7 @@ async function performSteamAPISearch(searchTerm) {
     
     if (!steamAppsList || steamAppsList.length === 0) {
         if (getAppList) {
-            getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ff6b6b; font-weight: 400; padding: 10px;">Failed to load Steam apps list</div>';
+            getAppList.innerHTML = '<div class="small p-2 text-center w-100 text-danger" style="font-weight: 400; padding: 10px;"><i class="bi bi-exclamation-triangle-fill me-2"></i>Failed to load Steam apps list</div>';
         }
         showNotification("Failed to load Steam apps list", "danger");
         return;
@@ -679,7 +964,7 @@ async function performSteamAPISearch(searchTerm) {
     
     if (filteredApps.length === 0) {
         if (getAppList) {
-            getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;">No matching apps found</div>';
+            getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;"><i class="bi bi-search me-2"></i>No matching apps found</div>';
         }
         showNotification(`No apps found matching "${searchTerm}"`, "warning");
         return;
@@ -874,10 +1159,12 @@ async function performSteamStoreSearch(searchTerm) {
     // If no cache, proceed with Steam Store search
     console.log(`No cache found for "${searchTerm}", proceeding with fresh Steam Store search...`);
     
-    // Show loading message
+    // Show loading animation
     const getAppList = document.getElementById('getAppList');
     if (getAppList) {
-        getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;">Searching Steam Store...</div>';
+        getAppList.innerHTML = `<div class="d-flex justify-content-center align-items-center w-100" style="padding: 20px;">
+            <img src="steam.gif" alt="Searching Steam Store..." title="Searching Steam Store..." width="64" height="64" style="opacity: 0.8;">
+        </div>`;
     }
     
     try {
@@ -886,7 +1173,7 @@ async function performSteamStoreSearch(searchTerm) {
         
         if (results.length === 0) {
             if (getAppList) {
-                getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;">No matching apps found</div>';
+                getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;"><i class="bi bi-search me-2"></i>No matching apps found</div>';
             }
             showNotification(`No apps found matching "${searchTerm}"`, "warning");
             return;
@@ -918,7 +1205,7 @@ async function performSteamStoreSearch(searchTerm) {
         console.error('Error performing Steam Store search:', error);
         
         if (getAppList) {
-            getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ff6b6b; font-weight: 400; padding: 10px;">Error searching Steam Store</div>';
+            getAppList.innerHTML = '<div class="small p-2 text-center w-100 text-danger" style="font-weight: 400; padding: 10px;"><i class="bi bi-exclamation-triangle-fill me-2"></i>Error searching Steam Store</div>';
         }
         
         showNotification("Error searching Steam Store - may be blocked by CORS", "danger");
@@ -1257,7 +1544,7 @@ function displayAppList(apps) {
     }
     
     if (apps.length === 0) {
-        getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;">No matching apps found</div>';
+        getAppList.innerHTML = '<div class="small p-2 text-center w-100" style="color: #ffffff; font-weight: 400; padding: 10px;"><i class="bi bi-search me-2"></i>No matching apps found</div>';
         return;
     }
     
@@ -1422,6 +1709,27 @@ function updateAppSelectAllState() {
     } else {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = true;
+    }
+    
+    // Show notification for Get App List
+    if (selectedCount > 0) {
+        showSelectionNotification(selectedCount, true);
+    }
+}
+
+// Show selection notification (shared function)
+function showSelectionNotification(count, isGetAppList = false) {
+    const notificationId = isGetAppList ? 'selectionNotification' : 'gamesSelectionNotification';
+    const countId = isGetAppList ? 'selectionCount' : 'gamesSelectionCount';
+
+    const notification = document.getElementById(notificationId);
+    const countSpan = document.getElementById(countId);
+
+    if (notification && countSpan) {
+        countSpan.textContent = count;
+
+        // Show notification only if there are selected items
+        notification.style.opacity = count > 0 ? '1' : '0';
     }
 }
 
@@ -1676,8 +1984,11 @@ function restoreSearchState() {
     // Restore search input
     const savedQuery = localStorage.getItem('searchQuery');
     const searchInput = document.getElementById('getAppSearch');
-    if (savedQuery && searchInput) {
-        searchInput.value = savedQuery;
+    const searchInputUniversal = document.getElementById('getAppSearchUniversal');
+    
+    if (savedQuery) {
+        if (searchInput) searchInput.value = savedQuery;
+        if (searchInputUniversal) searchInputUniversal.value = savedQuery;
     }
     
     // Restore active search engine
@@ -1690,16 +2001,57 @@ function restoreSearchState() {
             engineBtn.classList.remove('btn-secondary');
             engineBtn.classList.add('btn-primary');
             
-            // Update search info
+            // Update search info and show appropriate search bars
             const searchInfo = document.getElementById('searchInfo');
             const activeSearchEngine = document.getElementById('activeSearchEngine');
             const searchBtn = document.getElementById('searchBtn');
+            const singleSearchBar = document.getElementById('singleSearchBar');
+            const dualSearchBar = document.getElementById('dualSearchBar');
             
-            if (searchInfo && activeSearchEngine && searchBtn) {
-                const searchEngineName = engineBtn.textContent.trim();
+            if (searchInfo && activeSearchEngine) {
+                let searchEngineName = engineBtn.textContent.trim();
+                if (savedEngine === 'steamSearchBtn') {
+                    searchEngineName += " (Faster)";
+                    // Switch to dual mode for SteamAPI
+                    const singleModeSearch = document.getElementById('singleModeSearch');
+                    const dualModeSearch = document.getElementById('dualModeSearch');
+                    const searchBtnUniversal = document.getElementById('searchBtnUniversal');
+                    const searchBtnAppID = document.getElementById('searchBtnAppID');
+
+                    if (singleModeSearch) singleModeSearch.style.display = 'none';
+                    if (dualModeSearch) {
+                        dualModeSearch.classList.remove('d-none');
+                        dualModeSearch.classList.add('d-block');
+                    }
+
+                    // Copy search text and enable dual mode buttons
+                    const universalInput = document.getElementById('getAppSearchUniversal');
+                    if (universalInput && searchInput) {
+                        universalInput.value = searchInput.value;
+                    }
+                    if (searchBtnUniversal) searchBtnUniversal.disabled = false;
+                    if (searchBtnAppID) searchBtnAppID.disabled = false;
+                    if (searchBtn) searchBtn.disabled = true;
+                } else {
+                    if (savedEngine === 'steamstoreSearchBtn') {
+                        searchEngineName += " (Slower)";
+                    }
+                    // Switch to single mode for other engines
+                    const singleModeSearch = document.getElementById('singleModeSearch');
+                    const dualModeSearch = document.getElementById('dualModeSearch');
+
+                    if (singleModeSearch) singleModeSearch.style.display = 'flex';
+                    if (dualModeSearch) {
+                        dualModeSearch.classList.remove('d-block');
+                        dualModeSearch.classList.add('d-none');
+                    }
+
+                    // Enable single mode button
+                    if (searchBtn) searchBtn.disabled = false;
+                }
+                
                 searchInfo.style.display = 'block';
                 activeSearchEngine.textContent = searchEngineName;
-                searchBtn.disabled = false;
             }
         }
     }

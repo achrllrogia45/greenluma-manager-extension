@@ -61,25 +61,83 @@
             <div class="p-2 border-bottom border-dark-custom d-flex flex-column" id="getAppSection" style="min-height: 150px; flex: 0 0 auto;">
                 <!-- Search Bar -->
                 <div class="mb-2">
-                  <div class="input-group input-group-sm">
-                    <input 
-                      type="text" 
-                      id="getAppSearch" 
-                      placeholder="Search apps..."
-                      class="form-control form-control-sm bg-secondary-custom text-light border-0"
-                      style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
-                      autocomplete="off"
-                    >
-                    <button id="searchBtn" class="btn btn-secondary" type="button" disabled>
-                      <i class="bi bi-search"></i>
-                    </button>
+                  <!-- Search Bar Container - Switches between single and dual mode -->
+                  <div id="searchBarContainer">
+                    <!-- Single mode (for Steam Store and SteamDB) -->
+                    <div id="singleModeSearch" class="input-group input-group-sm">
+                      <input 
+                        type="text" 
+                        id="getAppSearch" 
+                        placeholder="Search apps..."
+                        class="form-control form-control-sm bg-secondary-custom text-light border-0"
+                        style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
+                        autocomplete="off"
+                      >
+                      <button id="searchBtn" class="btn btn-secondary" type="button" disabled>
+                        <i class="bi bi-search"></i>
+                      </button>
+                    </div>
+
+                    <!-- Dual mode (for SteamAPI) - 75:25 split -->
+                    <div id="dualModeSearch" class="d-none">
+                      <div class="d-flex gap-1">
+                        <!-- Universal search - 75% -->
+                        <div class="input-group input-group-sm" style="flex: 3;">
+                          <input 
+                            type="text" 
+                            id="getAppSearchUniversal" 
+                            placeholder="Search apps..."
+                            class="form-control form-control-sm bg-secondary-custom text-light border-0"
+                            style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
+                            autocomplete="off"
+                            title="Regular Search from SteamAPI"
+                          >
+                          <button id="searchBtnUniversal" class="btn btn-secondary" type="button" disabled>
+                            <i class="bi bi-search"></i>
+                          </button>
+                        </div>
+                        
+                        <!-- App ID search - 25% -->
+                        <div class="input-group input-group-sm" style="flex: 1;">
+                          <input 
+                            type="text" 
+                            id="getAppSearchAppID" 
+                            placeholder="App ID..."
+                            class="form-control form-control-sm bg-secondary-custom text-light border-0"
+                            style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
+                            autocomplete="off"
+                            pattern="[0-9]*"
+                            inputmode="numeric"
+                            title="Search by App ID.&#10;Display all DLCs if AppID is a game."
+                          >
+                          <button id="searchBtnAppID" class="btn btn-secondary" type="button" disabled>
+                            <i class="bi bi-hash"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div id="searchInfo" class="small text-muted-custom mt-1" style="font-size: 0.7rem; display: none;">
-                    Searching with: <span id="activeSearchEngine">None</span>
                   </div>
+                  
+                 <div id="searchInfo" class="small text-muted-custom mt-1 d-flex align-items-center justify-content-between" style="font-size: 0.7rem; display: none;">
+                    <div>
+                        Searching with: <span id="activeSearchEngine">None</span>
+                    </div>
+                    <div id="enterHint" title="Press Enter or Search Icon could display&#10;detailed list of DLCs and its Sorting" class="text-muted-important" style="white-space: nowrap; color: #fffb28;">
+                        <i class="bi bi-info-circle-fill">
+                            Press Enter or Icon for Details
+                        </i>
+                    </div>
+
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-1">
                     <label class="form-label small text-muted-custom mb-0">Get App List</label>
+                    
+                    <!-- Selection notification popup -->
+                    <div id="selectionNotification" class="px-3 py-1 bg-dark text-light rounded-pill small text-center" style="z-index: 1000; opacity: 0; transition: opacity 0.3s ease; background-color: rgba(33, 37, 41, 0.6) !important; backdrop-filter: blur(4px); font-size: 0.75rem; white-space: nowrap; pointer-events: none;">
+                        <span id="selectionCount">0</span> selected
+                    </div>
+                    
                     <div class="d-flex align-items-center gap-2">
                         <!-- Type filter: label + dropdown showing only current value (click value to toggle) -->
                         <span class="small text-muted-custom" style="font-size: 0.7rem;">Type:</span>
@@ -178,6 +236,12 @@
             <div class="p-2 d-flex flex-column" id="gamesSection" style="min-height: 150px; flex: 1 1 auto;">
                 <div class="d-flex align-items-center justify-content-between mb-1">
                     <label class="form-label small text-muted-custom mb-0">Games List</label>
+                    
+                    <!-- Selection notification popup -->
+                    <div id="gamesSelectionNotification" class="px-3 py-1 bg-dark text-light rounded-pill small text-center" style="z-index: 1000; opacity: 0; transition: opacity 0.3s ease; background-color: rgba(33, 37, 41, 0.6) !important; backdrop-filter: blur(4px); font-size: 0.75rem; white-space: nowrap; pointer-events: none;">
+                        <span id="gamesSelectionCount">0</span> selected
+                    </div>
+                    
                     <div class="d-flex align-items-center gap-1">
                         <span class="small text-muted-custom" style="font-size: 0.7rem;">Start from:</span>
                         <input 
@@ -257,7 +321,7 @@
                        
             <!-- Action Buttons -->
             <div class="d-flex align-items-center justify-content-between">
-                
+
                 <!-- <button id="settingsBtn" class="btn btn-outline-secondary btn-sm p-1">
                     <i class="bi bi-gear"></i>
                 </button> -->
@@ -286,8 +350,11 @@
         </footer>
     </div>
 
-    <!-- Resize handle -->
-    <div id="resize-handle" class="resize-handle-corner"></div>
+    <!-- Resize handle (corner) -->
+    <div id="resize-handle" class="resize-handle-corner" title="Resize">
+        <i class="bi bi-arrow-up-left" aria-hidden="true"></i>
+        <span class="visually-hidden">Resize</span>
+    </div>
 
     <script src="main.js"></script>
     <script src="app-sort.js"></script>
