@@ -21,6 +21,10 @@
 	<li><b>Import/Export function so you can save your lists</li>
 	<li><b>Export bulk of AppList in one click, to anything you like (copy clipboard, .zip, .txts, and .bat file)</li>
 </ul>
+<br>		
+<p align="center">		
+<img width="796" height="575" alt="image" src="https://github.com/user-attachments/assets/a84fa4fd-e27c-4853-9ba2-f1b7a1038610" />
+</p>	
 
 <h2>📦 Installation</h2>
 <ol>
