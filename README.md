@@ -23,7 +23,8 @@
 </ul>
 <br>		
 <p align="center">		
-<img width="796" height="575" alt="image" src="https://github.com/user-attachments/assets/a84fa4fd-e27c-4853-9ba2-f1b7a1038610" />
+<img width="790" height="574" alt="image" src="https://github.com/user-attachments/assets/2411e4ed-dc8e-4736-a6e3-96aa41d998f2" />
+
 </p>	
 
 <h2>📦 Installation</h2>
