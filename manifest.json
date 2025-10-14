@@ -3,9 +3,14 @@
   "name": "GreenLuma Manager",
   "version": "1.0.0",
   "description": "A browser extension for managing GreenLuma features.",
+  "content_security_policy": "script-src 'self' https://cdn.jsdelivr.net; object-src 'self'",
   "action": {
     "default_popup": "index.html",
     "default_title": "GreenLuma Manager"
+  },
+  "icons": {
+    "16": "./icon.png",
+    "128": "./icon.png"
   },
   "permissions": [
     "storage"
@@ -20,7 +25,7 @@
   "content_scripts": [],
   "web_accessible_resources": [
     {
-      "resources": ["main.js", "styles.css", "search.js", "app-sort.js", "utils.js", "generator.js"],
+      "resources": ["main.js", "styles.css","popup.css", "search.js", "app-sort.js", "utils.js", "generator.js"],
       "matches": ["<all_urls>"]
     }
   ]

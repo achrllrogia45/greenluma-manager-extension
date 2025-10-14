@@ -738,17 +738,67 @@ function downloadAsBat() {
         // Sort games by priority
         const sortedGames = [...window.gamesData].sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
         
-        // Create BAT file content with ECHO commands
-        let batContent = "@echo off\n";
-        batContent += "REM GreenLuma Games List Generator\n";
-        batContent += `REM Generated on: ${new Date().toLocaleString()}\n`;
-        batContent += `REM Total games: ${sortedGames.length}\n\n`;
-        
+        // Create BAT file content with user prompt and ECHO commands that create AppList folder
+        // The generated batch will:
+        // 1) Ask user where to generate (1 = here, 2 = Steam path)
+        // 2) Create an "AppList" folder in the chosen location
+        // 3) Create/overwrite files named <Priority>.txt containing the AppID
+        const now = new Date();
+        let batContent = "@echo off\r\n";
+        batContent += "REM GreenLuma Games List Generator\r\n";
+        batContent += `REM Generated on: ${now.toLocaleString()}\r\n`;
+    batContent += `REM Total games: ${sortedGames.length}\r\n\r\n`;
+
+    // If this script was re-launched with an 'elevated' flag, capture it and the user's choice
+    // Usage when re-launching: %~f0 elevated 2  -> elevated run and proceed with choice 2
+    batContent += `if /i "%~1"=="elevated" (\r\n`;
+    batContent += `  set "ELEVATED=1"\r\n`;
+    batContent += `  set "USERCHOICE=%~2"\r\n`;
+    batContent += `)\r\n\r\n`;
+
+        // Prompt for location
+        batContent += `echo Q: Choose where to generate?\r\n`;
+        batContent += `echo 1. Here\r\n`;
+        batContent += `echo 2. Steam (C:\\Program Files (x86)\\Steam)\r\n`;
+    // If USERCHOICE was provided (when elevated relaunch), skip prompting
+    batContent += `if defined USERCHOICE goto CHOICE%USERCHOICE%\r\n`;
+    // Use CHOICE so user can press 1 or 2 without needing to press Enter
+    batContent += `choice /c 12 /n /m "Enter choice: "\r\n`;
+    // CHOICE sets ERRORLEVEL to the index of the chosen key (1 or 2)
+    // Use goto labels to avoid placing parentheses-containing paths inside a parenthesized block
+    batContent += `if errorlevel 2 goto CHOICE2\r\n`;
+    batContent += `if errorlevel 1 goto CHOICE1\r\n`;
+    batContent += `echo Please input the correct choice\r\n`;
+    batContent += `pause\r\n`;
+    batContent += `exit /b 1\r\n`;
+    batContent += `:CHOICE2\r\n`;
+    // If already elevated (relaunch), just set target and continue
+    batContent += `if defined ELEVATED (\r\n`;
+    batContent += `  set "target=C:\\Program Files (x86)\\Steam\\AppList"\r\n`;
+    batContent += `  goto AFTER_CHOICE\r\n`;
+    batContent += `)\r\n`;
+    // Not elevated: request elevation and pass the chosen option so the elevated run proceeds
+    batContent += `echo Requesting admin privileges for Steam...\r\n`;
+    batContent += `powershell -Command "Start-Process -FilePath '%~f0' -ArgumentList 'elevated','2' -Verb runAs"\r\n`;
+    batContent += `exit /b\r\n`;
+    batContent += `:CHOICE1\r\n`;
+    batContent += `set "target=%cd%\\AppList"\r\n`;
+    batContent += `:AFTER_CHOICE\r\n\r\n`;
+
+    // Create directory if not exists (don't cd into it; use full quoted paths when writing files)
+    batContent += `if not exist "%target%" mkdir "%target%"\r\n\r\n`;
+
+        // For each game, write the ID into <Priority>.txt; use > to overwrite
         sortedGames.forEach(game => {
-            batContent += `ECHO ${game.ID}>${game.Priority}.txt\n`;
+            // Escape any percent signs in ID or priority
+            const id = String(game.ID).replace(/%/g, '%%');
+            const pr = String(game.Priority).replace(/%/g, '%%');
+            // Write directly to quoted full path to handle spaces and parentheses safely
+            batContent += `echo ${id}>"%target%\\${pr}.txt"\r\n`;
         });
-        
-        batContent += "\necho All files generated successfully!\npause\n";
+
+        batContent += `\r\necho All files generated successfully!\r\n`;
+        batContent += `pause\r\n`;
         
         // Create and download BAT file
         const blob = new Blob([batContent], { type: 'text/plain' });

@@ -1,46 +1,52 @@
-# GreenLuma Manager Browser Extension
 
+<h1 align="center">GreenLuma Manager Browser Extension</h1>
 
-A powerful browser extension that streamlines your GreenLuma experience by automatically managing and sorting your Steam game and DLC lists.
+<p align="center"><em>A powerful browser extension that streamlines your GreenLuma experience by automatically managing and sorting your Steam game and DLC lists.</em></p>
 
-## 🚀 Features
+<hr>
 
-- **Automatic App List Sorting**: Automatically organizes your games and DLCs in a clean, structured format
-- **Steam Integration**: Directly fetches game and DLC information from Steam servers
-- **User-Friendly Interface**: Simple and intuitive interface for managing your app list
-- **Fast & Efficient**: Lightweight extension that doesn't slow down your browser
+<h2>🚀 Features</h2>
+<ul>
+	<li><b>Automatic App List Sorting</b>: Automatically organizes your games and DLCs in a clean, structured format</li>
+	<li><b>Steam Integration</b>: Directly fetches game and DLC information from Steam servers</li>
+	<li><b>User-Friendly Interface</b>: Simple and intuitive interface for managing your app list</li>
+	<li><b>Fast & Efficient</b>: Lightweight extension that doesn't slow down your browser</li>
+</ul>
 
-## 📦 Installation
+<h2>📦 Installation</h2>
+<ol>
+	<li>Download the extension from <a href="https://github.com/achrllrogia45/greenluma-manager-extension/">Repository</a> (download as ZIP)</li>
+	<li>Open Chrome/Edge and go to <code>chrome://extensions</code> or <code>edge://extensions</code></li>
+	<li>Enable <b>Developer mode</b> in the top right corner</li>
+	<li>Click <b>Load unpacked</b> and select the extension folder</li>
+</ol>
 
-1. Download the extension from [Repository](https://github.com/achrllrogia45/greenluma-manager-extension/) download as ZIP
-2. Open Chrome/Edge and go to `chrome://extensions` or `edge://extensions`
-3. Enable "Developer mode" in the top right corner
-4. Click "Load unpacked" and select the extension folder
+<h2>🔧 Usage</h2>
+<ol>
+	<li>Click the GreenLuma Manager icon in your browser toolbar</li>
+	<li>Search for games or DLCs you want to add</li>
+	<li>The extension will automatically sort and organize your app list</li>
+	<li>Export the sorted list for use with GreenLuma</li>
+</ol>
 
-## 🔧 Usage
+<h2>🛡️ Permissions</h2>
+<p>This extension requires the following permissions:</p>
+<ul>
+	<li>Access to Steam API (for fetching game information)</li>
+	<li>Access to Steam Store through CORS proxy (for fetching game details)</li>
+	<li>Local storage (for saving your preferences)</li>
+</ul>
 
-1. Click the GreenLuma Manager icon in your browser toolbar
-2. Search for games or DLCs you want to add
-3. The extension will automatically sort and organize your app list
-4. Export the sorted list for use with GreenLuma
+<h2>🤝 Contributing</h2>
+<p>Contributions are welcome! Feel free to:</p>
+<ul>
+	<li>Report major bugs <span style="color:gray;">(please don't repot minor bugs eg. typo or UI misalignment. Give me bulk of bugs instead)</span></li>
+	<li>Suggest new features</li>
+	<li>Submit pull requests</li>
+</ul>
 
-## 🛡️ Permissions
+<h2>📝 License</h2>
+<p><b>IDK (?) :/</b></p>
 
-This extension requires the following permissions:
-- Access to Steam API (for fetching game information)
-- Local storage (for saving your preferences)
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-- Report major bugs (please don't repot minor bugs eg. typo or UI misalignment. Give me bulk of bugs instead)
-- Suggest new features
-- Submit pull requests
-
-## 📝 License
-
-IDK (?) :/
-
-## ⚠️ Disclaimer
-
-This extension is not affiliated with, endorsed by, or sponsored by Steam or Valve Corporation.
+<h2>⚠️ Disclaimer</h2>
+<p>This extension is not affiliated with, endorsed by, or sponsored by Steam or Valve Corporation.</p>

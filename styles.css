@@ -645,3 +645,10 @@ input[type="number"] {
 .dropdown-menu.show {
     display: block;
 }
+
+/* Position dropup menus above their toggle button */
+.dropup .dropdown-menu {
+    top: auto !important;
+    bottom: 100% !important;
+    margin-bottom: 0.25rem;
+}

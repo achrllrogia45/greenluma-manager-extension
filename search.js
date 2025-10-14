@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the app list with placeholder text
     const getAppList = document.getElementById('getAppList');
     if (getAppList) {
-        getAppList.innerHTML = '<div class="small p-2 text-center" style="color: #ffffff; font-weight: 400; padding: 10px;">Use the search bar above to find apps</div>';
+        getAppList.innerHTML = '<div class="small p-2 text-center text-light opacity-50 pe-none user-select-none" style="font-weight: 400; padding: 10px;">Use the search bar above to find apps</div>';
     }
     
     // Preload Steam apps list when page loads
@@ -83,37 +83,7 @@ async function getBatchAppDetails(appids) {
     const batchSize = 100;
     const results = {};
     
-    for (let i = 0; i < appids.length; i += batchSize) {
-        const batch = appids.slice(i, i + batchSize);
-        const ids = batch.join(',');
-        
-        try {
-            // Note: This may fail due to CORS restrictions in browsers
-            const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${ids}`);
-            if (!response.ok) {
-                console.warn(`Failed to fetch batch starting at index ${i}`);
-                continue;
-            }
-            
-            const batchData = await response.json();
-            Object.assign(results, batchData);
-            
-            // Add small delay to avoid rate limiting
-            if (i + batchSize < appids.length) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-        } catch (error) {
-            console.error(`Error fetching batch starting at index ${i}:`, error);
-            
-            // If CORS error, show helpful message to user
-            if (error.message.includes('CORS') || error.name === 'TypeError') {
-                showNotification("CORS restriction detected - app types may not load", "warning");
-            }
-        }
-    }
-    
-    console.log(`Successfully fetched details for ${Object.keys(results).length} apps`);
-    return results;
+    return {};
 }
 
 function filterAppsByName(apps, searchTerm, sortMode = 'relevance') {

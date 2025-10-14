@@ -61,7 +61,7 @@ async function loadGamesData() {
             // Display empty state message
             const gamesList = document.getElementById('gamesList');
             if (gamesList) {
-                gamesList.innerHTML = '<div class="text-muted small p-3 text-center">No games added yet. Use "Get App List" to search and add games with the Down button.</div>';
+                gamesList.innerHTML = '<div class="text-light opacity-50 small p-3 text-center pe-none user-select-none">No games added yet. Use "Get App List" to search and add games with the Down button.</div>';
             }
             
             // Set initial sort state
@@ -414,7 +414,7 @@ function displayGames(games) {
             gameRow.addEventListener('drop', handleDrop);
             gameRow.addEventListener('dragend', handleDragEnd);
             gameRow.style.userSelect = 'none';
-            gameRow.title = 'Drag to reorder priority';
+            // gameRow.title = 'Drag to reorder priority';
         } else {
             gameRow.title = '';
         }
