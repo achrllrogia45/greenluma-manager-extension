@@ -15,9 +15,11 @@
 <h2>🚀 Features</h2>
 <ul>
 	<li><b>Automatic App List Sorting</b>: Automatically organizes your games and DLCs in a clean, structured format</li>
-	<li><b>Steam Integration</b>: Directly fetches game and DLC information from Steam servers</li>
+	<li><b>Steam Integration</b>: Directly fetches game and DLC information from Steam servers, and you can preview it through the thumbnail</li>
 	<li><b>User-Friendly Interface</b>: Simple and intuitive interface for managing your app list</li>
 	<li><b>Fast & Efficient</b>: Lightweight extension that doesn't slow down your browser</li>
+	<li><b>Import/Export function so you can save your lists</li>
+	<li><b>Export bulk of AppList in one click, to anything you like (copy clipboard, .zip, .txts, and .bat file)</li>
 </ul>
 
 <h2>📦 Installation</h2>
