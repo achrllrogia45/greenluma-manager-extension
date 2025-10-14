@@ -596,6 +596,44 @@ function initializeSearchInput() {
         }
     });
     
+    // Helper to ensure a searching animation element exists
+    function ensureSearchingAnimation() {
+        let anim = document.getElementById('searchingAnimation');
+        if (!anim) {
+            // Create a small inline animation element
+            anim = document.createElement('div');
+            anim.id = 'searchingAnimation';
+            anim.style.display = 'none';
+            anim.style.alignItems = 'center';
+            anim.style.gap = '8px';
+            anim.style.color = '#ccc';
+            anim.style.marginLeft = '8px';
+            anim.style.fontSize = '0.85rem';
+            anim.innerHTML = `<img src="steam.gif" alt="Searching..." width="20" height="20" style="vertical-align:middle; opacity:.9;"> <span style="color:#cfe3ff;">Searching...</span>`;
+
+            // Prefer placing it inside the search bar container so it's visible and near the input
+            const preferredContainers = [
+                document.getElementById('searchBarContainer'),
+                document.getElementById('singleModeSearch'),
+                document.getElementById('dualModeSearch'),
+                document.getElementById('searchBarContainer')
+            ];
+
+            let placed = false;
+            for (const c of preferredContainers) {
+                if (c) {
+                    // insert after the container to avoid breaking input-group layout
+                    c.appendChild(anim);
+                    placed = true;
+                    break;
+                }
+            }
+
+            if (!placed) document.body.appendChild(anim);
+        }
+        return anim;
+    }
+
     // Initialize dual search bar event handlers
     if (searchInputUniversal && searchBtnUniversal) {
         // Universal search button click
@@ -610,18 +648,30 @@ function initializeSearchInput() {
             }
         });
         
-        // Universal search input handling
+        // Universal search input handling (debounced to avoid immediate API fetch)
         let universalTypingTimer;
+        const universalDoneTypingInterval = 2000; // 2 seconds
+
         searchInputUniversal.addEventListener('input', function() {
+            const anim = ensureSearchingAnimation();
+            // Show searching animation immediately when user starts typing
+            if (anim) anim.style.display = 'flex';
+
             clearTimeout(universalTypingTimer);
-            universalTypingTimer = setTimeout(filterAppListByUniversalInput, 300);
-            
-            // Save search query to localStorage
-            const query = this.value.trim();
-            if (query) {
-                localStorage.setItem('searchQuery', query);
-            } else {
-                localStorage.removeItem('searchQuery');
+            universalTypingTimer = setTimeout(() => {
+                filterAppListByUniversalInput();
+                // Hide searching animation when search starts
+                if (anim) anim.style.display = 'none';
+            }, universalDoneTypingInterval);
+
+            // Save search query to localStorage only if user typed (not programmatic)
+            if (!isProgrammaticChange) {
+                const query = this.value.trim();
+                if (query) {
+                    localStorage.setItem('searchQuery', query);
+                } else {
+                    localStorage.removeItem('searchQuery');
+                }
             }
         });
     }
@@ -640,15 +690,15 @@ function initializeSearchInput() {
         });
     }
     
-    // Filter results as user types (after 3s delay) - for single search bar
+    // Filter results as user types (debounced 2s) - for single search bar
     let typingTimer;
-    const doneTypingInterval = 2000; // ms (3 seconds)
-    const searchingAnimation = document.getElementById('searchingAnimation'); // Add this element in your HTML
+    const doneTypingInterval = 2000; // ms (2 seconds)
 
     searchInput.addEventListener('input', function() {
+        const anim = ensureSearchingAnimation();
         clearTimeout(typingTimer);
         // Show searching animation
-        if (searchingAnimation) searchingAnimation.style.display = 'block';
+        if (anim) anim.style.display = 'flex';
 
         // Clear Steam Store cache when search input changes
         const steamStoreBtn = document.getElementById('steamstoreSearchBtn');
@@ -658,7 +708,7 @@ function initializeSearchInput() {
         typingTimer = setTimeout(() => {
             filterAppListByInput();
             // Hide searching animation
-            if (searchingAnimation) searchingAnimation.style.display = 'none';
+            if (anim) anim.style.display = 'none';
         }, doneTypingInterval);
         // Save search query to localStorage
         const query = this.value.trim();
