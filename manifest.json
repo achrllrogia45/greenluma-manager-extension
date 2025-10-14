@@ -3,7 +3,9 @@
   "name": "GreenLuma Manager",
   "version": "1.0.0",
   "description": "A browser extension for managing GreenLuma features.",
-  "content_security_policy": "script-src 'self' https://cdn.jsdelivr.net; object-src 'self'",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "action": {
     "default_popup": "index.html",
     "default_title": "GreenLuma Manager"
