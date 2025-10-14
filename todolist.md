@@ -5,7 +5,7 @@ GreenLuma Manager To-Do List: {
 - [+] Drag-n-drop from Steam Store and SteamDB page to the app to add the game/DLC to the list.
 - [+] Add paste clipboard to add bulk games/DLCs to the list.
 - [+] Fixing resizer functionality.
-- [+] Add pin to the sidebar functionality.
+- [+] Add pin to the sidebar functionality and open in full size tab.
 
 Search engine: {
   Steam API/Store: {
