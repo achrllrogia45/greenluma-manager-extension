@@ -1,6 +1,11 @@
 GreenLuma Manager To-Do List: {
 
 - [???]  Change all codes to React+Vite environment.
+- [+] Add pin icon to not close the window when click outside.
+- [+] Drag-n-drop from Steam Store and SteamDB page to the app to add the game/DLC to the list.
+- [+] Add paste clipboard to add bulk games/DLCs to the list.
+- [+] Fixing resizer functionality.
+- [+] Add pin to the sidebar functionality.
 
 Search engine: {
   Steam API/Store: {
