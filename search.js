@@ -1,3 +1,12 @@
+// Prevent localStorage writes when setting value programmatically
+    let isProgrammaticChange = false;
+
+    // Helper to set value programmatically
+    function setInputValue(input, value) {
+        isProgrammaticChange = true;
+        input.value = value;
+        isProgrammaticChange = false;
+    }
 // Search functionality for the GreenLuma Manager
 
 /**  
@@ -631,21 +640,26 @@ function initializeSearchInput() {
         });
     }
     
-    // Filter results as user types (after small delay) - for single search bar
+    // Filter results as user types (after 3s delay) - for single search bar
     let typingTimer;
-    const doneTypingInterval = 300; // ms
-    
+    const doneTypingInterval = 2000; // ms (3 seconds)
+    const searchingAnimation = document.getElementById('searchingAnimation'); // Add this element in your HTML
+
     searchInput.addEventListener('input', function() {
         clearTimeout(typingTimer);
-        
+        // Show searching animation
+        if (searchingAnimation) searchingAnimation.style.display = 'block';
+
         // Clear Steam Store cache when search input changes
         const steamStoreBtn = document.getElementById('steamstoreSearchBtn');
         if (steamStoreBtn && steamStoreBtn.getAttribute('data-active') === 'true') {
             clearSteamStoreCacheOnSearchChange();
         }
-        
-        typingTimer = setTimeout(filterAppListByInput, doneTypingInterval);
-        
+        typingTimer = setTimeout(() => {
+            filterAppListByInput();
+            // Hide searching animation
+            if (searchingAnimation) searchingAnimation.style.display = 'none';
+        }, doneTypingInterval);
         // Save search query to localStorage
         const query = this.value.trim();
         if (query) {
@@ -1859,8 +1873,13 @@ function restoreSearchState() {
     const searchInputUniversal = document.getElementById('getAppSearchUniversal');
     
     if (savedQuery) {
-        if (searchInput) searchInput.value = savedQuery;
-        if (searchInputUniversal) searchInputUniversal.value = savedQuery;
+        if (typeof setInputValue === 'function') {
+            if (searchInput) setInputValue(searchInput, savedQuery);
+            if (searchInputUniversal) setInputValue(searchInputUniversal, savedQuery);
+        } else {
+            if (searchInput) searchInput.value = savedQuery;
+            if (searchInputUniversal) searchInputUniversal.value = savedQuery;
+        }
     }
     
     // Restore active search engine
@@ -1898,8 +1917,10 @@ function restoreSearchState() {
 
                     // Copy search text and enable dual mode buttons
                     const universalInput = document.getElementById('getAppSearchUniversal');
-                    if (universalInput && searchInput) {
-                        universalInput.value = searchInput.value;
+                    if (typeof setInputValue === 'function') {
+                        if (universalInput && searchInput) setInputValue(universalInput, searchInput.value);
+                    } else {
+                        if (universalInput && searchInput) universalInput.value = searchInput.value;
                     }
                     if (searchBtnUniversal) searchBtnUniversal.disabled = false;
                     if (searchBtnAppID) searchBtnAppID.disabled = false;
@@ -1920,8 +1941,10 @@ function restoreSearchState() {
 
                     // Copy search text from universal back to single mode if it exists
                     const universalInput = document.getElementById('getAppSearchUniversal');
-                    if (universalInput && searchInput && universalInput.value.trim()) {
-                        searchInput.value = universalInput.value;
+                    if (typeof setInputValue === 'function') {
+                        if (universalInput && searchInput && universalInput.value.trim()) setInputValue(searchInput, universalInput.value);
+                    } else {
+                        if (universalInput && searchInput && universalInput.value.trim()) searchInput.value = universalInput.value;
                     }
 
                     // Enable single mode button

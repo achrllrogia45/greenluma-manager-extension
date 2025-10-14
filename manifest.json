@@ -1,14 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "GreenLuma Manager",
+  "name": "GUMA",
   "version": "1.0.0",
-  "description": "A browser extension for managing GreenLuma features.",
+  "description": "A browser extension for managing GreenLuma AppList.",
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "action": {
     "default_popup": "index.html",
-    "default_title": "GreenLuma Manager"
+    "default_title": "GUMA"
   },
   "icons": {
     "16": "./icon.png",

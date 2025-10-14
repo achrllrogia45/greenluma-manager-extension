@@ -1,5 +1,5 @@
 
-<h1 align="center">GreenLuma Manager Browser Extension</h1>
+<h1 align="center">(GUMA) GreenLuma Manager Browser Extension</h1>
 
 
 <p align="center">
