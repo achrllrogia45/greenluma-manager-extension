@@ -1,7 +1,7 @@
 
 <h1 align="center">GreenLuma Manager Browser Extension</h1>
 
-<p align="center"><em>A powerful browser extension that streamlines your GreenLuma experience by automatically managing and sorting your Steam game and DLC lists.</em></p>
+<p align="center"><em>A browser extension that streamlines your Steam App List Manager by automatically managing and sorting your Steam game and DLC lists into files.</em></p>
 
 <hr>
 
