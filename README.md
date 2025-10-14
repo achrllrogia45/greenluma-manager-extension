@@ -1,6 +1,13 @@
 
 <h1 align="center">GreenLuma Manager Browser Extension</h1>
 
+
+<p align="center">
+	<img width="40%" height="auto" src="https://github.com/achrllrogia45/greenluma-manager-extension/blob/main/icon.png">
+</p>
+
+<h2 align="center"> <a href="https://github.com/achrllrogia45/greenluma-manager-extension/releases/tag/release"> Download </a> </h2>
+
 <p align="center"><em>A browser extension that streamlines your Steam App List Manager by automatically managing and sorting your Steam game and DLC lists into files.</em></p>
 
 <hr>
@@ -15,7 +22,7 @@
 
 <h2>📦 Installation</h2>
 <ol>
-	<li>Download the extension from <a href="https://github.com/achrllrogia45/greenluma-manager-extension/">Repository</a> (download as ZIP)</li>
+	<li>Download the extension from <a href="https://github.com/achrllrogia45/greenluma-manager-extension/">Repository</a> (download as ZIP) or <a href="https://github.com/achrllrogia45/greenluma-manager-extension/releases/tag/release">[Release]</a> </li>
 	<li>Open Chrome/Edge and go to <code>chrome://extensions</code> or <code>edge://extensions</code></li>
 	<li>Enable <b>Developer mode</b> in the top right corner</li>
 	<li>Click <b>Load unpacked</b> and select the extension folder</li>
