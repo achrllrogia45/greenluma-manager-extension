@@ -1434,43 +1434,65 @@ function showNotification(message, type) {
     // Check if there's an existing notification
     let notification = document.querySelector('.notification-toast');
     
-    // If notification already exists, remove it
-    if (notification) {
+    // If notification already exists, remove it immediately
+    if (notification && notification.parentNode) {
         document.body.removeChild(notification);
     }
     
+    // Define clean color scheme
+    const colorScheme = {
+        success: { bg: '#1e3a2e', border: '#10b981', text: '#6ee7b7' },
+        info: { bg: '#1e3a5f', border: '#3b82f6', text: '#93c5fd' },
+        warning: { bg: '#3d2f1f', border: '#f59e0b', text: '#fbbf24' },
+        danger: { bg: '#3d1f1f', border: '#ef4444', text: '#fca5a5' }
+    };
+    
+    const colors = colorScheme[type] || colorScheme.info;
+    
     // Create new notification
     notification = document.createElement('div');
-    notification.className = `notification-toast bg-${type} text-white`;
-    notification.style.position = 'fixed';
-    notification.style.bottom = '20px';
-    notification.style.right = '20px';
-    notification.style.padding = '10px 15px';
-    notification.style.borderRadius = '4px';
-    notification.style.zIndex = '9999';
-    notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
-    notification.style.opacity = '0';
-    notification.style.transition = 'opacity 0.3s ease';
+    notification.className = 'notification-toast';
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 14px;
+        background: ${colors.bg};
+        border-left: 3px solid ${colors.border};
+        border-radius: 4px;
+        color: ${colors.text};
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.4;
+        max-width: 380px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+        z-index: 10000;
+        transform: translateY(100px);
+        transition: all 0.25s ease-out;
+        opacity: 0;
+    `;
     
     notification.textContent = message;
     
     // Add to document
     document.body.appendChild(notification);
     
-    // Trigger animation
+    // Trigger slide-up animation
     setTimeout(() => {
+        notification.style.transform = 'translateY(0)';
         notification.style.opacity = '1';
     }, 10);
     
     // Remove after delay
     setTimeout(() => {
+        notification.style.transform = 'translateY(100px)';
         notification.style.opacity = '0';
         
         setTimeout(() => {
-            if (notification.parentNode) {
+            if (notification && notification.parentNode) {
                 document.body.removeChild(notification);
             }
-        }, 300);
+        }, 250);
     }, 3000);
 }
 

@@ -1,18 +1,20 @@
 GreenLuma Manager To-Do List: {
 
 - [???]  Change all codes to React+Vite environment.
-- [+] Add pin icon to not close the window when click outside.
+- [OK] Add pin to the sidebar functionality and open in full size tab.
+- [OK] Add manual input Game List at the header: {
+      [OK] Popup window with close button
+      [OK] Add description for pasting code for every line hovering the paste bar
+      [OK]  paste APP ID Code into paste bar, within every code div by space
+      [OK] add checker list, OK list by very bottom using the same style as strip line from Fetch List, and Delete List as the
+          as Games List
+      [OK] generate 'DLC' if url ../app/{game_name}__  had 2 underscore
+      [OK] auto generate steamdb and steam store link by the AppID, 
+      [OK] Add manual input Game List to the sidebar: {
+      }
 - [+] Fixing resizer functionality.
-- [+] Add pin to the sidebar functionality and open in full size tab.
-- [+] Drag-n-drop from Steam Store and SteamDB page to the app to add the game/DLC to the list.
-- [+] Add manual input Game List at the header: {
-		[+] Popup window with close button 
-		[+] Add description for pasting code for every line
-		[+] paste APP Code into paste bar, within every code at different line
-		[+] add checker list, OK list by very bottom using the same style as strip line from Fetch List, and Delete List as the same as Games List
-		[+] generate 'DLC' game/dlc url ../app/{name_game} 
-		[+] auto generate steamdb and steam store 
-    }
+- [+] Drag-n-drop from Steam Store and SteamDB page to the app to add the game/DLC to the manual.List.
+- 
 
 Search engine: {
   Steam API/Store: {

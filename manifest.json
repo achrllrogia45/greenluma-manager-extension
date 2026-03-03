@@ -10,12 +10,16 @@
     "default_popup": "index.html",
     "default_title": "GUMA"
   },
+  "side_panel": {
+    "default_path": "index.html"
+  },
   "icons": {
     "16": "./icon.png",
     "128": "./icon.png"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "sidePanel"
   ],
   "host_permissions": [
     "https://api.steampowered.com/*",

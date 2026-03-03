@@ -795,4 +795,203 @@
         });
     }
 
+    // ========================================
+    // Drag and Drop Functionality
+    // ========================================
+    
+    // Initialize drag and drop for manual input list
+    function initializeDragAndDrop() {
+        const dropZone = document.querySelector('.manual-list-container');
+        if (!dropZone) return;
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop zone when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.style.outline = '2px dashed #6c757d';
+                dropZone.style.backgroundColor = 'rgba(108, 117, 125, 0.1)';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.style.outline = '';
+                dropZone.style.backgroundColor = '';
+            }, false);
+        });
+
+        // Handle dropped content
+        dropZone.addEventListener('drop', handleDrop, false);
+    }
+
+    // Extract App ID from Steam Store or SteamDB URL
+    function extractAppIdFromUrl(url) {
+        // Steam Store pattern: https://store.steampowered.com/app/{appid}/...
+        const steamStoreMatch = url.match(/store\.steampowered\.com\/app\/(\d+)/);
+        if (steamStoreMatch) {
+            return {
+                appId: steamStoreMatch[1],
+                source: 'steam',
+                url: url
+            };
+        }
+
+        // SteamDB pattern: https://steamdb.info/app/{appid}/
+        const steamDbMatch = url.match(/steamdb\.info\/app\/(\d+)/);
+        if (steamDbMatch) {
+            return {
+                appId: steamDbMatch[1],
+                source: 'steamdb',
+                url: url
+            };
+        }
+
+        return null;
+    }
+
+    // Check if URL indicates DLC (2 underscores in game name)
+    function isDlcFromUrl(url) {
+        // Extract the game name part from Steam Store URL
+        // Pattern: https://store.steampowered.com/app/{appid}/{game_name}/
+        const nameMatch = url.match(/store\.steampowered\.com\/app\/\d+\/([^/?#]+)/);
+        if (nameMatch) {
+            const gameName = nameMatch[1];
+            // Count underscores in the game name
+            const underscoreCount = (gameName.match(/__/g) || []).length;
+            return underscoreCount >= 1; // If game name has "__" (double underscore), it's likely DLC
+        }
+        return false;
+    }
+
+    // Fetch and add app with DLC detection from URL
+    async function fetchAndAddAppFromUrl(appId, sourceUrl) {
+        try {
+            console.log(`Fetching app ${appId} from Steam API (dropped from ${sourceUrl})...`);
+            
+            // Check if already exists in manual list
+            if (manualInputList) {
+                const existing = Array.from(manualInputList.querySelectorAll('.manual-row')).find(
+                    row => row.dataset.appId === appId
+                );
+                if (existing) {
+                    console.log(`App ${appId} already in manual list`);
+                    if (typeof showNotification === 'function') {
+                        showNotification(`App ${appId} already in list`, 'info');
+                    }
+                    return;
+                }
+            }
+
+            // Check URL pattern for DLC indicator (2 underscores)
+            const urlIndicatesDlc = isDlcFromUrl(sourceUrl);
+
+            // Fetch from Steam API
+            const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const appData = data[appId];
+
+            if (!appData || !appData.success) {
+                console.warn(`App ${appId} not found in Steam API`);
+                // Add with default name, use URL pattern to determine type
+                const defaultType = urlIndicatesDlc ? 'DLC' : 'Game';
+                addToManualList(appId, `App ${appId}`, defaultType);
+                return;
+            }
+
+            const gameInfo = appData.data;
+            const appName = gameInfo.name || `App ${appId}`;
+            
+            // Determine type: Check URL pattern first, then Steam's type
+            let appType = 'Game';
+            
+            // First check if URL indicates DLC (2 underscores pattern)
+            if (urlIndicatesDlc) {
+                appType = 'DLC';
+                console.log(`Detected DLC from URL pattern (double underscore)`);
+            }
+            // Then check Steam's type
+            else if (gameInfo.type && gameInfo.type.toLowerCase() === 'dlc') {
+                appType = 'DLC';
+            }
+            // Check if it has a fullgame/base game requirement
+            else if (gameInfo.fullgame) {
+                appType = 'DLC';
+            }
+
+            console.log(`Fetched: ${appId} - ${appName} (${appType})`);
+            
+            // Add to manual list
+            addToManualList(appId, appName, appType);
+
+            // Show success notification
+            if (typeof showNotification === 'function') {
+                showNotification(`Added: ${appName}`, 'success');
+            }
+
+        } catch (error) {
+            console.error(`Error fetching app ${appId}:`, error);
+            // Add with default name if fetch fails, use URL pattern
+            const urlIndicatesDlc = isDlcFromUrl(sourceUrl);
+            const defaultType = urlIndicatesDlc ? 'DLC' : 'Game';
+            addToManualList(appId, `App ${appId}`, defaultType);
+            
+            if (typeof showNotification === 'function') {
+                showNotification(`Added App ${appId} (fetch failed)`, 'warning');
+            }
+        }
+    }
+
+    // Handle drop event
+    async function handleDrop(e) {
+        const dt = e.dataTransfer;
+        
+        // Get dropped content (could be text or URL)
+        let droppedContent = dt.getData('text/plain') || dt.getData('text/uri-list') || dt.getData('URL');
+        
+        if (!droppedContent) {
+            console.log('No content in drop');
+            return;
+        }
+
+        droppedContent = droppedContent.trim();
+        console.log('Dropped content:', droppedContent);
+
+        // Try to extract App ID from URL
+        const urlData = extractAppIdFromUrl(droppedContent);
+        
+        if (urlData) {
+            console.log(`Detected ${urlData.source} URL with App ID: ${urlData.appId}`);
+            
+            // Show loading notification
+            if (typeof showNotification === 'function') {
+                showNotification(`Processing App ID ${urlData.appId}...`, 'info');
+            }
+
+            // Fetch and add the app from URL
+            await fetchAndAddAppFromUrl(urlData.appId, urlData.url);
+        } else {
+            // Not a valid Steam/SteamDB URL
+            console.log('Not a valid Steam Store or SteamDB URL');
+            if (typeof showNotification === 'function') {
+                showNotification('Please drop a valid Steam Store or SteamDB link', 'warning');
+            }
+        }
+    }
+
+    // Initialize drag and drop on page load
+    initializeDragAndDrop();
+
 })();
