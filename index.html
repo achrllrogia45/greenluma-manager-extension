@@ -126,12 +126,7 @@
                     <div>
                         Searching with: <span id="activeSearchEngine">None</span>
                     </div>
-                    <div id="enterHint" title="Press Enter or Search Icon could display&#10;detailed list of DLCs and its Sorting" class="text-muted-important" style="white-space: nowrap; color: #fffb28; display: none;">
-                        <i class="bi bi-info-circle-fill">
-                            Press Enter or Icon for Details
-                        </i>
-                    </div>
-
+                    
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-1">
                     <div>
@@ -288,8 +283,8 @@
                     </div>
                     
                     <div class="d-flex align-items-center gap-1">
-                        <span class="small me-2 text-muted-custom" style="font-size: 0.7rem;">Start from:</span>
-                        <div class="input-group input-group-sm" style="width: 78px;">
+                        <span class="small text-muted-custom" style="font-size: 0.7rem;">Start from:</span>
+                        <div class="me-2 input-group input-group-sm" style="width: 78px;">
                             <input 
                                 type="number" 
                                 id="priorityStart" 
@@ -303,6 +298,28 @@
                                 <i class="bi bi-check-square-fill"></i>
                             </button>
                         </div>
+
+                         
+                         <span class="small text-muted-custom" style="font-size: 0.7rem;">Change Type:</span>
+                        <div style="display: inline-flex; align-items: center; position: relative;">
+                            <style>
+                                select#gamesTypeDropdown option {
+                                    background-color: #192849;
+                                    color: #f8f9fa;
+                                }
+                                select#gamesTypeDropdown option:checked,
+                                select#gamesTypeDropdown option:hover {
+                                    background-color: #263a5b;
+                                    color: #ffffff;
+                                }
+                                select#gamesTypeDropdown::-moz-focus-inner { background-color: transparent; }
+                            </style>
+                            <select id="gamesTypeDropdown" class="form-select form-select-sm btn btn-sm btn-secondary bg-secondary-custom text-light border-0 d-flex align-items-center" style="width: auto; font-size: 0.7rem; padding: 2px 8px; appearance: none; -webkit-appearance: none; -moz-appearance: none;" title="Change Type of selected games">
+                                <option value="Game">Game</option>
+                                <option value="DLC">DLC</option>
+                            </select>
+                        </div>
+
                     </div>
                 </div>
                 <div class="bg-secondary-custom rounded overflow-hidden d-flex flex-column" style="flex: 1; min-height: 150px;">

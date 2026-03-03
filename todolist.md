@@ -35,9 +35,9 @@ Games List: {
  - [OK] Funtionally Clear Button to clear selected list.
  - [OK] Export: Priority, AppID, Name , Type, Link to Steam Store/SteamDB to JSON file.
  - [OK] AVOID DUPLICATE AppID when importing the list.
- - [+] Rearange multiple list by selected
- - [+] Add Search for Added Game list
- - [+] Add Manual change "Type" by selected list
+ - [OK] Rearange multiple list by selected
+ - [OK] Add Search for Added Game list
+ - [OK] Add Manual change "Type" by selected list
 },
 
 Clear Button: {

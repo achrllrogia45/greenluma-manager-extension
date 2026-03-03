@@ -151,6 +151,19 @@ body {
             background-color: rgba(108, 117, 125, 0.2);
         }
         
+        /* Make ID and Name columns in getAppList selectable with text cursor */
+        #getAppList .app-row .col-id,
+        #getAppList .app-row .col-name {
+            cursor: text !important;
+            user-select: text !important;
+        }
+        
+        /* Prevent selection on Type column in getAppList */
+        #getAppList .app-row .col-type,
+        #getAppList .app-row .col-checkbox {
+            user-select: none !important;
+        }
+        
         .game-row {
             width: 100%;
             min-width: 100%;
@@ -159,6 +172,12 @@ body {
         
         .game-row:hover {
             background-color: rgba(108, 117, 125, 0.2);
+        }
+        
+        /* Make Name column in gamesList selectable with text cursor */
+        #gamesList .game-row .col-name {
+            cursor: text !important;
+            user-select: text !important;
         }
         
         .resize-handle {
@@ -659,4 +678,39 @@ input[type="number"] {
     visibility: hidden !important;
     height: 0 !important;
     overflow: hidden !important;
+}
+
+/* Drag and drop styles */
+.game-row {
+    transition: opacity 0.2s ease, border 0.2s ease;
+}
+
+.game-row[draggable="true"] {
+    cursor: move;
+}
+
+.game-row[draggable="true"]:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.game-row.dragging {
+    opacity: 0.5;
+}
+
+.game-row.drag-over {
+    border-top: 2px solid #0dcaf0 !important;
+}
+
+/* Drag count badge */
+#dragCountBadge {
+    animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.1);
+    }
 }

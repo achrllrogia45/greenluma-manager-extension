@@ -404,6 +404,7 @@ function displayGames(games) {
         // Remove any existing drag event listeners
         gameRow.removeEventListener('dragstart', handleDragStart);
         gameRow.removeEventListener('dragover', handleDragOver);
+        gameRow.removeEventListener('dragleave', handleDragLeave);
         gameRow.removeEventListener('drop', handleDrop);
         gameRow.removeEventListener('dragend', handleDragEnd);
         
@@ -411,6 +412,7 @@ function displayGames(games) {
             gameRow.draggable = true;
             gameRow.addEventListener('dragstart', handleDragStart);
             gameRow.addEventListener('dragover', handleDragOver);
+            gameRow.addEventListener('dragleave', handleDragLeave);
             gameRow.addEventListener('drop', handleDrop);
             gameRow.addEventListener('dragend', handleDragEnd);
             gameRow.style.userSelect = 'none';
@@ -587,14 +589,186 @@ function reorderPriorities(gameId, newPriority) {
     console.log("Reordering complete");
 }
 
+// Reorder multiple items with stacking behavior
+function reorderMultiplePriorities(gameIds, targetPriority) {
+    console.log(`reorderMultiplePriorities called for ${gameIds.length} games to priority ${targetPriority}`);
+    
+    if (!window.gamesData || gameIds.length === 0) {
+        console.error("No games data available or no games to reorder");
+        return;
+    }
+    
+    // Get the games to move
+    const gamesToMove = window.gamesData.filter(g => gameIds.includes(g.ID.toString()));
+    
+    if (gamesToMove.length === 0) {
+        console.error("No games found with the provided IDs");
+        return;
+    }
+    
+    // Sort games to move by their current priority (highest number first to maintain order)
+    gamesToMove.sort((a, b) => parseInt(b.Priority) - parseInt(a.Priority));
+    
+    console.log("Games to move:", gamesToMove.map(g => ({ id: g.ID, name: g.Name, oldPriority: g.Priority })));
+    console.log("Before reordering - priorities:", window.gamesData.map(g => ({ id: g.ID, name: g.Name, priority: g.Priority })));
+    
+    // Get current priorities of games to move
+    const oldPriorities = gamesToMove.map(g => parseInt(g.Priority)).sort((a, b) => a - b);
+    const lowestOldPriority = oldPriorities[0];
+    const highestOldPriority = oldPriorities[oldPriorities.length - 1];
+    
+    // Determine if we're moving up or down
+    const movingDown = lowestOldPriority < targetPriority;
+    
+    // Create a temporary priority map for games NOT being moved
+    const tempPriorities = new Map();
+    const gamesNotMoving = window.gamesData.filter(g => !gameIds.includes(g.ID.toString()));
+    
+    // Calculate new priorities for non-moving games
+    if (movingDown) {
+        // Moving down: compact the space left by moved items, then shift items after target
+        let currentPriority = 0;
+        
+        window.gamesData.forEach(g => {
+            const gPriority = parseInt(g.Priority);
+            
+            if (!gameIds.includes(g.ID.toString())) {
+                // Skip the priorities where we're inserting
+                if (gPriority > highestOldPriority && gPriority <= targetPriority) {
+                    // Shift these games up to fill the gap left by moved items
+                    tempPriorities.set(g.ID, gPriority - gamesToMove.length);
+                } else if (gPriority > targetPriority) {
+                    // Keep these games as is
+                    tempPriorities.set(g.ID, gPriority);
+                } else {
+                    // Keep games before the moved section as is
+                    tempPriorities.set(g.ID, gPriority);
+                }
+            }
+        });
+    } else {
+        // Moving up: shift items at target position and after, then compact the space
+        window.gamesData.forEach(g => {
+            const gPriority = parseInt(g.Priority);
+            
+            if (!gameIds.includes(g.ID.toString())) {
+                if (gPriority >= targetPriority && gPriority < lowestOldPriority) {
+                    // Shift these games down to make room
+                    tempPriorities.set(g.ID, gPriority + gamesToMove.length);
+                } else if (gPriority > highestOldPriority) {
+                    // Keep these games as is
+                    tempPriorities.set(g.ID, gPriority);
+                } else {
+                    // Keep games before target as is
+                    tempPriorities.set(g.ID, gPriority);
+                }
+            }
+        });
+    }
+    
+    // Apply temp priorities to games not moving
+    window.gamesData.forEach(g => {
+        if (tempPriorities.has(g.ID)) {
+            g.Priority = tempPriorities.get(g.ID);
+        }
+    });
+    
+    // Now assign new priorities to moved games (stacking sequentially at target)
+    gamesToMove.reverse().forEach((game, index) => {
+        const newPriority = targetPriority + index;
+        
+        // Find the game in the original data and update it
+        const gameInData = window.gamesData.find(g => g.ID == game.ID);
+        if (gameInData) {
+            gameInData.Priority = newPriority;
+            console.log(`Set game "${game.Name}" priority to ${newPriority}`);
+        }
+    });
+    
+    console.log("After reordering - priorities:", window.gamesData.map(g => ({ id: g.ID, name: g.Name, priority: g.Priority })));
+    
+    // Normalize priorities to ensure proper sequence
+    normalizePriorities();
+    
+    // Save changes to localStorage
+    saveGamesData(window.gamesData);
+    console.log("Saved updated games data to localStorage");
+    
+    // Re-sort and display if currently sorted by priority
+    if (sortState.column === 'Priority') {
+        console.log("Re-sorting by priority");
+        const sortedGames = [...window.gamesData].sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
+        displayGames(sortedGames);
+    } else {
+        console.log(`Current sort is by ${sortState.column}, not re-sorting by priority`);
+        displayGames(getSortedGames(window.gamesData, sortState.column, sortState.direction));
+    }
+    
+    console.log("Multiple items reordering complete");
+}
+
+// Normalize priorities to ensure proper sequence without gaps
+function normalizePriorities() {
+    if (!window.gamesData || window.gamesData.length === 0) return;
+    
+    console.log("Normalizing priorities to remove gaps");
+    
+    // Get priority start value
+    const startValue = parseInt(localStorage.getItem('priorityStart')) || 0;
+    
+    // Sort by current priorities
+    const sortedGames = [...window.gamesData].sort((a, b) => parseInt(a.Priority) - parseInt(b.Priority));
+    
+    // Reassign priorities sequentially
+    sortedGames.forEach((game, index) => {
+        const newPriority = startValue + index;
+        
+        // Find the game in the original data and update it
+        const gameInData = window.gamesData.find(g => g.ID == game.ID);
+        if (gameInData) {
+            gameInData.Priority = newPriority;
+        }
+    });
+    
+    console.log("Priorities normalized");
+}
+
 // Drag and drop functionality
 let draggedElement = null;
 let draggedGameId = null;
+let draggedGameIds = []; // Store multiple selected game IDs
+let dragCountBadge = null; // Visual indicator for drag count
 
 function handleDragStart(e) {
     draggedElement = this;
     draggedGameId = this.getAttribute('data-game-id');
-    this.style.opacity = '0.5';
+    
+    // Check if the dragged item is part of a selection
+    if (selectionState.selectedItems.has(draggedGameId)) {
+        // Drag all selected items
+        draggedGameIds = Array.from(selectionState.selectedItems);
+        
+        // Set opacity for all selected items
+        document.querySelectorAll('.game-row').forEach(row => {
+            const rowGameId = row.getAttribute('data-game-id');
+            if (selectionState.selectedItems.has(rowGameId)) {
+                row.style.opacity = '0.5';
+            }
+        });
+        
+        // Create and show drag count badge if multiple items
+        if (draggedGameIds.length > 1) {
+            createDragCountBadge(draggedGameIds.length);
+        }
+        
+        // Set drag data to show count
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', `Moving ${draggedGameIds.length} items`);
+    } else {
+        // Drag single item
+        draggedGameIds = [draggedGameId];
+        this.style.opacity = '0.5';
+    }
     
     // Prevent sorting when dragging
     e.stopPropagation();
@@ -603,25 +777,50 @@ function handleDragStart(e) {
 function handleDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Add visual feedback for drop target
+    if (draggedGameIds.length > 0) {
+        const targetGameId = this.getAttribute('data-game-id');
+        if (!draggedGameIds.includes(targetGameId)) {
+            this.style.borderTop = '2px solid #0dcaf0';
+        }
+    }
+    
+    // Update badge position to follow cursor
+    if (dragCountBadge && draggedGameIds.length > 1) {
+        dragCountBadge.style.left = `${e.clientX + 15}px`;
+        dragCountBadge.style.top = `${e.clientY + 15}px`;
+    }
+}
+
+function handleDragLeave(e) {
+    // Remove visual feedback
+    this.style.borderTop = '';
 }
 
 function handleDrop(e) {
     e.preventDefault();
     e.stopPropagation();
     
-    if (draggedElement !== this && draggedGameId) {
+    // Remove visual feedback
+    this.style.borderTop = '';
+    
+    if (draggedElement !== this && draggedGameIds.length > 0) {
         const targetGameId = this.getAttribute('data-game-id');
         
-        // Find games in data
-        const draggedGame = window.gamesData.find(g => g.ID == draggedGameId);
+        // Don't drop on a selected item
+        if (draggedGameIds.includes(targetGameId)) {
+            return;
+        }
+        
+        // Find target game
         const targetGame = window.gamesData.find(g => g.ID == targetGameId);
         
-        if (draggedGame && targetGame) {
-            const draggedPriority = draggedGame.Priority;
+        if (targetGame) {
             const targetPriority = targetGame.Priority;
             
-            // Reorder priorities using the same logic as input change
-            reorderPriorities(draggedGameId, targetPriority);
+            // Reorder multiple items with stacking behavior
+            reorderMultiplePriorities(draggedGameIds, targetPriority);
             
             // Save changes to localStorage
             saveGamesData(window.gamesData);
@@ -630,12 +829,47 @@ function handleDrop(e) {
 }
 
 function handleDragEnd(e) {
-    if (this.style) {
-        this.style.opacity = '';
-    }
+    // Reset opacity for all items
+    document.querySelectorAll('.game-row').forEach(row => {
+        row.style.opacity = '';
+        row.style.borderTop = '';
+    });
+    
+    // Remove drag count badge
+    removeDragCountBadge();
+    
     draggedElement = null;
     draggedGameId = null;
+    draggedGameIds = [];
     e.stopPropagation();
+}
+
+// Create a visual badge showing the number of items being dragged
+function createDragCountBadge(count) {
+    // Remove existing badge if any
+    removeDragCountBadge();
+    
+    dragCountBadge = document.createElement('div');
+    dragCountBadge.id = 'dragCountBadge';
+    dragCountBadge.className = 'position-fixed bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold';
+    dragCountBadge.style.cssText = `
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+        z-index: 9999;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    `;
+    dragCountBadge.textContent = count;
+    document.body.appendChild(dragCountBadge);
+}
+
+// Remove the drag count badge
+function removeDragCountBadge() {
+    if (dragCountBadge && dragCountBadge.parentNode) {
+        dragCountBadge.parentNode.removeChild(dragCountBadge);
+        dragCountBadge = null;
+    }
 }
 
 // Add click handlers for row selection
@@ -983,6 +1217,70 @@ function initializeGamesSearch() {
     }
 }
 
+// Initialize games type dropdown for bulk type changes
+function initializeGamesTypeDropdown() {
+    const gamesTypeDropdown = document.getElementById('gamesTypeDropdown');
+    
+    if (!gamesTypeDropdown) {
+        console.warn("Could not find gamesTypeDropdown element");
+        return;
+    }
+    
+    gamesTypeDropdown.addEventListener('change', function() {
+        const selectedType = this.value;
+        
+        if (!selectedType) {
+            return;
+        }
+        
+        // Get selected games
+        const selectedGameIds = Array.from(selectionState.selectedItems);
+        
+        if (selectedGameIds.length === 0) {
+            showNotification('Please select at least one game to change type', 'warning');
+            // Reset dropdown to default
+            this.value = '';
+            return;
+        }
+        
+        console.log(`Changing type to "${selectedType}" for ${selectedGameIds.length} selected games`);
+        
+        // Update the Type for all selected games
+        let changedCount = 0;
+        selectedGameIds.forEach(gameId => {
+            const game = window.gamesData.find(g => g.ID == gameId);
+            if (game) {
+                const oldType = game.Type;
+                game.Type = selectedType;
+                changedCount++;
+                console.log(`Changed ${game.Name} (ID: ${game.ID}) type from "${oldType}" to "${selectedType}"`);
+            }
+        });
+        
+        if (changedCount > 0) {
+            // Save changes to localStorage
+            saveGamesData(window.gamesData);
+            console.log(`Saved changes for ${changedCount} games`);
+            
+            // Re-display the games list with current sort
+            const sortedGames = getSortedGames(window.gamesData, sortState.column, sortState.direction);
+            displayGames(sortedGames);
+            
+            // Show success notification
+            showNotification(`Changed type to "${selectedType}" for ${changedCount} game${changedCount > 1 ? 's' : ''}`, 'success');
+            
+            // Clear selection after change
+            clearAllSelections();
+            updateSelectAllState();
+        }
+        
+        // Reset dropdown to default
+        this.value = '';
+    });
+    
+    console.log("Games type dropdown initialized");
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM content loaded, initializing application");
@@ -1007,6 +1305,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize games search filter
     initializeGamesSearch();
+    
+    // Initialize games type dropdown for changing selected games' type
+    initializeGamesTypeDropdown();
     
     // Add keyboard shortcut for debugging (Ctrl+Shift+D)
     document.addEventListener('keydown', function(e) {
