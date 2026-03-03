@@ -83,10 +83,12 @@
 
                     <!-- Dual mode (for SteamAPI) - 75:25 split -->
                     <div id="dualModeSearch" class="d-none">
-                      <div class="d-flex gap-1">
+                      <div class="d-flex gap-5">
                         <!-- Universal search - 75% -->
                         <div class="input-group input-group-sm" style="flex: 3;">
-                          <input 
+                          <div class="d-flex gap-1" style="flex: 3;">
+                          <div class="d-flex" style="flex: 2;">
+                            <input 
                             type="text" 
                             id="getAppSearchUniversal" 
                             placeholder="Search apps..."
@@ -95,6 +97,19 @@
                             autocomplete="off"
                             title="Regular Search from SteamAPI"
                           >
+                        </div>
+                          <div class="d-flex" style="flex: 1;">
+                          <input 
+                            type="text" 
+                            id="steamAPIKey" 
+                            placeholder="Steam API Key..."
+                            class="form-control form-control-sm bg-secondary-custom text-light border-0"
+                            style="font-size: 0.75rem; background-color: #2D3238; color: #f8f9fa;"
+                            autocomplete="off"
+                            title="Steam API Key required!&#10;go to: https://steamcommunity.com/dev/apikey"
+                          >
+                          </div>
+                          </div>
                           <button id="searchBtnUniversal" class="btn btn-secondary" type="button" disabled>
                             <i class="bi bi-search"></i>
                           </button>
@@ -253,6 +268,30 @@
            
             <!-- Games List Section -->
             <div class="p-2 d-flex flex-column" id="gamesSection" style="min-height: 150px; flex: 1 1 auto;">
+                <!-- Search Bar -->
+                <div class="mb-2">
+                  <!-- Search Bar Container - Switches between single and dual mode -->
+                  <div id="searchgameBarContainer">
+                    <div class="d-flex gap-2">
+                        <div class="input-group input-group-sm" style="flex: 7;">
+                            <span class="input-group-text bg-secondary-custom text-light border-0" style="background-color: #808e9b; color: #f8f9fa;">
+                                 <i class="bi bi-search"></i>
+                            </span>
+                            <input 
+                                 type="text" 
+                                 id="gamesSearch" 
+                                 placeholder="Search..."
+                                 class="form-control form-control-sm bg-secondary-custom text-light border-0"
+                                 style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
+                                 autocomplete="off"
+                                >
+                        </div>
+                            <button id="manualInputListBtn" class="btn btn-secondary btn-sm-custom" type="button" style="flex: 3;" title="Click to manually input App IDs, enter each on a new line.&#10;Example:&#10;12345&#10;67890&#10;13579">
+                                Manual Input List
+                            </button>
+                    </div>
+                  </div>
+                </div>
                 <div class="d-flex align-items-center justify-content-between mb-1">
                     <div>
                         <i class="bi bi-info-circle-fill text-info me-2" title="Imported AppList from above"></i>
