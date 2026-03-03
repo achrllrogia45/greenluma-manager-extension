@@ -652,3 +652,11 @@ input[type="number"] {
     bottom: 100% !important;
     margin-bottom: 0.25rem;
 }
+
+/* Filter hidden rows - used by search filter */
+.filtered-hidden {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}

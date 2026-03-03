@@ -455,6 +455,9 @@ function displayGames(games) {
     // Add sorting event listeners
     addSortingEventListeners();
     
+    // Apply games list filter
+    applyGamesListTextFilter();
+    
     console.log("Games displayed successfully");
 }
 
@@ -756,6 +759,11 @@ function updateSelectAllState() {
     const selectAllCheckbox = document.getElementById('selectAll');
     const totalCheckboxes = document.querySelectorAll('.game-checkbox').length;
     const selectedCount = selectionState.selectedItems.size;
+    const gamesSelectionCount = document.getElementById('gamesSelectionCount');
+
+    if (gamesSelectionCount) {
+        gamesSelectionCount.textContent = selectedCount;
+    }
     
     if (selectedCount === 0) {
         selectAllCheckbox.checked = false;
@@ -878,6 +886,103 @@ function repairPrioritySequence() {
     return isValid;
 }
 
+// Filter games list based on gamesSearch input
+function applyGamesListTextFilter() {
+    const filterInput = document.getElementById('gamesSearch');
+    const gamesList = document.getElementById('gamesList');
+    
+    if (!filterInput || !gamesList) {
+        return;
+    }
+    
+    const filterText = filterInput.value.trim().toLowerCase();
+    const gameRows = gamesList.querySelectorAll('.game-row');
+    
+    if (!filterText) {
+        // Show all rows if filter is empty
+        gameRows.forEach(row => {
+            row.style.removeProperty('display');
+            row.classList.remove('filtered-hidden');
+        });
+        // Remove empty state if it exists
+        const emptyState = gamesList.querySelector('.filter-empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        return;
+    }
+    
+    let visibleCount = 0;
+    gameRows.forEach((row) => {
+        // Get the name from the col-name div only
+        const nameCell = row.querySelector('.col-name');
+        const idCell = row.querySelector('.col-id');
+        
+        if (nameCell) {
+            const nameText = nameCell.textContent.toLowerCase();
+            const idText = idCell ? idCell.textContent.toLowerCase() : '';
+            const searchableText = `${nameText} ${idText}`;
+            
+            const matches = searchableText.includes(filterText);
+            
+            if (matches) {
+                row.style.removeProperty('display');
+                row.classList.remove('filtered-hidden');
+                visibleCount++;
+            } else {
+                row.style.setProperty('display', 'none', 'important');
+                row.classList.add('filtered-hidden');
+            }
+        }
+    });
+    
+    // Show empty state if no matches
+    if (visibleCount === 0 && gameRows.length > 0) {
+        // Create or update empty state message
+        let emptyState = gamesList.querySelector('.filter-empty-state');
+        if (!emptyState) {
+            emptyState = document.createElement('div');
+            emptyState.className = 'filter-empty-state small p-2 text-center w-100 text-muted';
+            emptyState.style.fontWeight = '400';
+            emptyState.style.padding = '10px';
+            gamesList.appendChild(emptyState);
+        }
+        emptyState.textContent = `No results matching "${filterInput.value}"`;
+        emptyState.style.display = 'block';
+    } else {
+        // Remove empty state if it exists
+        const emptyState = gamesList.querySelector('.filter-empty-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+    }
+}
+
+// Initialize games search filter
+function initializeGamesSearch() {
+    const gamesSearchInput = document.getElementById('gamesSearch');
+    
+    if (gamesSearchInput) {
+        let gamesSearchTimer;
+        const gamesSearchDelay = 250;
+
+        gamesSearchInput.addEventListener('input', function() {
+            clearTimeout(gamesSearchTimer);
+            gamesSearchTimer = setTimeout(() => {
+                applyGamesListTextFilter();
+            }, gamesSearchDelay);
+        });
+        
+        // Also update filter on Enter key for immediate response
+        gamesSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                clearTimeout(gamesSearchTimer);
+                applyGamesListTextFilter();
+            }
+        });
+    }
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM content loaded, initializing application");
@@ -899,6 +1004,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize horizontal panel resize functionality
     initializeHorizontalPanelResize();
+    
+    // Initialize games search filter
+    initializeGamesSearch();
     
     // Add keyboard shortcut for debugging (Ctrl+Shift+D)
     document.addEventListener('keydown', function(e) {
@@ -939,6 +1047,8 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 selectionState.lastSelectedIndex = -1;
             }
+
+            updateSelectAllState();
         }
     });
 });

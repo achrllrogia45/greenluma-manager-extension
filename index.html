@@ -71,7 +71,7 @@
                       <input 
                         type="text" 
                         id="getAppSearch" 
-                        placeholder="Search apps..."
+                        placeholder="Search Game..."
                         class="form-control form-control-sm bg-secondary-custom text-light border-0"
                         style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
                         autocomplete="off"
@@ -81,41 +81,10 @@
                       </button>
                     </div>
 
-                    <!-- Dual mode (for SteamAPI) - 75:25 split -->
+                                        <!-- Dual mode (for SteamAPI) -->
                     <div id="dualModeSearch" class="d-none">
-                      <div class="d-flex gap-5">
-                        <!-- Universal search - 75% -->
-                        <div class="input-group input-group-sm" style="flex: 3;">
-                          <div class="d-flex gap-1" style="flex: 3;">
-                          <div class="d-flex" style="flex: 2;">
-                            <input 
-                            type="text" 
-                            id="getAppSearchUniversal" 
-                            placeholder="Search apps..."
-                            class="form-control form-control-sm bg-secondary-custom text-light border-0"
-                            style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
-                            autocomplete="off"
-                            title="Regular Search from SteamAPI"
-                          >
-                        </div>
-                          <div class="d-flex" style="flex: 1;">
-                          <input 
-                            type="text" 
-                            id="steamAPIKey" 
-                            placeholder="Steam API Key..."
-                            class="form-control form-control-sm bg-secondary-custom text-light border-0"
-                            style="font-size: 0.75rem; background-color: #2D3238; color: #f8f9fa;"
-                            autocomplete="off"
-                            title="Steam API Key required!&#10;go to: https://steamcommunity.com/dev/apikey"
-                          >
-                          </div>
-                          </div>
-                          <button id="searchBtnUniversal" class="btn btn-secondary" type="button" disabled>
-                            <i class="bi bi-search"></i>
-                          </button>
-                        </div>
-                        
-                        <!-- App ID search - 25% -->
+                    <div class="d-flex gap-2">
+                        <!-- App ID search -->
                         <div class="input-group input-group-sm" style="flex: 1;">
                           <input 
                             type="text" 
@@ -131,6 +100,22 @@
                           <button id="searchBtnAppID" class="btn btn-secondary" type="button" disabled>
                             <i class="bi bi-hash"></i>
                           </button>
+                        </div>
+
+                        <!-- Search inside Get App List -->
+                        <div class="input-group input-group-sm" style="flex: 3;">
+                            <span class="input-group-text bg-secondary-custom text-light border-0" style="background-color: #808e9b; color: #f8f9fa;">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input 
+                                type="text" 
+                                id="getAppListSearch" 
+                                placeholder="Search..."
+                                class="form-control form-control-sm bg-secondary-custom text-light border-0"
+                                style="font-size: 0.75rem; background-color: #808e9b; color: #f8f9fa;"
+                                autocomplete="off"
+                                title="Filter current results in Get App List"
+                            >
                         </div>
                       </div>
                     </div>
@@ -303,19 +288,21 @@
                     </div>
                     
                     <div class="d-flex align-items-center gap-1">
-                        <span class="small text-muted-custom" style="font-size: 0.7rem;">Start from:</span>
-                        <input 
-                            type="number" 
-                            id="priorityStart" 
-                            value="0" 
-                            min="0" 
-                            max="999"
-                            class="form-control form-control-sm bg-secondary-custom text-light border-0" 
-                            style="width: 50px; height: 22px; font-size: 0.7rem; text-align: center; color: #f8f9fa !important;"
-                        >
-                        <button id="applyPriorityStartBtn" class="btn btn-outline-secondary btn-sm p-1" title="Apply Priority Start" style="font-size: 0.7rem; padding: 2px 6px;">
-                            OK
-                        </button>
+                        <span class="small me-2 text-muted-custom" style="font-size: 0.7rem;">Start from:</span>
+                        <div class="input-group input-group-sm" style="width: 78px;">
+                            <input 
+                                type="number" 
+                                id="priorityStart" 
+                                value="0" 
+                                min="0" 
+                                max="999"
+                                class="form-control form-control-sm bg-secondary-custom text-light border-0" 
+                                style="height: 22px; font-size: 0.7rem; text-align: center; color: #f8f9fa !important;"
+                            >
+                            <button id="applyPriorityStartBtn" class="btn btn-dark" type="button" title="Apply Priority Start">
+                                <i class="bi bi-check-square-fill"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="bg-secondary-custom rounded overflow-hidden d-flex flex-column" style="flex: 1; min-height: 150px;">

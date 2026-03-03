@@ -196,6 +196,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     appSelectionState.lastSelectedIndex = -1;
                 }
+                
+                // Update selection notification
+                if (typeof showSelectionNotification === 'function') {
+                    showSelectionNotification(appSelectionState.selectedItems.size, true);
+                }
             }
         }
     });
