@@ -151,11 +151,23 @@ body {
             background-color: rgba(108, 117, 125, 0.2);
         }
         
-        /* Make ID and Name columns in getAppList selectable with text cursor */
-        #getAppList .app-row .col-id,
-        #getAppList .app-row .col-name {
+        /* ID column - entire cell has text cursor and is selectable */
+        #getAppList .app-row .col-id {
             cursor: text !important;
             user-select: text !important;
+        }
+        
+        /* Name column - default cursor for clickable areas */
+        #getAppList .app-row .col-name {
+            cursor: default;
+            user-select: none;
+        }
+        
+        /* Text spans inside Name column - text cursor and selectable */
+        #getAppList .app-row .col-name .text-selectable {
+            cursor: text !important;
+            user-select: text !important;
+            display: inline;
         }
         
         /* Prevent selection on Type column in getAppList */
@@ -174,10 +186,42 @@ body {
             background-color: rgba(108, 117, 125, 0.2);
         }
         
-        /* Make Name column in gamesList selectable with text cursor */
-        #gamesList .game-row .col-name {
+        /* ID column - entire cell has text cursor and is selectable */
+        #gamesList .game-row .col-id {
             cursor: text !important;
             user-select: text !important;
+        }
+        
+        /* Name column - default cursor for clickable areas */
+        #gamesList .game-row .col-name {
+            cursor: default;
+            user-select: none;
+        }
+        
+        /* Text spans inside Name column - text cursor and selectable */
+        #gamesList .game-row .col-name .text-selectable {
+            cursor: text !important;
+            user-select: text !important;
+            display: inline;
+        }
+        
+        /* Manual input list - ID column entire cell is selectable */
+        #manualInputList .manual-row .col-id {
+            cursor: text !important;
+            user-select: text !important;
+        }
+        
+        /* Name column - default cursor for clickable areas */
+        #manualInputList .manual-row .col-name {
+            cursor: default;
+            user-select: none;
+        }
+        
+        /* Text spans inside Name column - text cursor and selectable */
+        #manualInputList .manual-row .col-name .text-selectable {
+            cursor: text !important;
+            user-select: text !important;
+            display: inline;
         }
         
         .resize-handle {

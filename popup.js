@@ -87,7 +87,7 @@
 
 	// Process all existing ID cells inside the two containers
 	function processExisting() {
-		const selectors = ['#getAppList .col-id', '#gamesList .col-id'];
+		const selectors = ['#getAppList .col-id', '#gamesList .col-id', '#manualInputList .col-id'];
 		selectors.forEach(sel => {
 			document.querySelectorAll(sel).forEach(convertCellToLink);
 		});
@@ -116,6 +116,7 @@
 		processExisting();
 		observeContainer(document.getElementById('getAppList'));
 		observeContainer(document.getElementById('gamesList'));
+		observeContainer(document.getElementById('manualInputList'));
 	});
 
 	// Also run once in case script executes after DOM is ready already
@@ -123,6 +124,7 @@
 		processExisting();
 		observeContainer(document.getElementById('getAppList'));
 		observeContainer(document.getElementById('gamesList'));
+		observeContainer(document.getElementById('manualInputList'));
 	}
 
 })();

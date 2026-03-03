@@ -1167,8 +1167,8 @@ function displayAppList(apps) {
             <div class="col-checkbox text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem;">
                 <input type="checkbox" class="form-check-input form-check-input-sm app-checkbox" data-app-id="${app.ID}" style="margin: 0;" ${appSelectionState.selectedItems.has(app.ID.toString()) ? 'checked' : ''}>
             </div>
-            <div class="col-id text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${app.ID}</div>
-            <div class="col-name border-end border-dark-custom" style="padding: 0.15rem 0.5rem; font-size: 0.75rem;">${app.Name}</div>
+            <div class="col-id text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;"><span class="text-selectable">${app.ID}</span></div>
+            <div class="col-name border-end border-dark-custom" style="padding: 0.15rem 0.5rem; font-size: 0.75rem;"><span class="text-selectable">${app.Name}</span></div>
             <div class="col-type text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${app.Type}</div>
         `;
         
@@ -1278,6 +1278,12 @@ function addAppRowClickHandlers() {
         row.addEventListener('click', function(e) {
             // Don't toggle if clicking directly on checkbox
             if (e.target.type === 'checkbox') return;
+            
+            // Don't toggle if clicking on ID column (entire column is text-selectable)
+            if (e.target.closest('.col-id')) return;
+            
+            // Don't toggle if clicking on text-selectable spans in Name column
+            if (e.target.classList.contains('text-selectable')) return;
             
             const appId = this.getAttribute('data-app-id');
             const checkbox = this.querySelector(`[data-app-id="${appId}"]`);

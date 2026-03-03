@@ -433,8 +433,8 @@ function displayGames(games) {
                        style="width: 40px; height: 20px; font-size: 0.7rem; text-align: center; background: transparent; border: 1px solid #495057; color: #f8f9fa; border-radius: 2px;" 
                        min="0" max="999" ${isDraggable ? '' : 'readonly'}>
             </div>
-            <div class="col-id text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.ID}</div>
-            <div class="col-name border-end border-dark-custom" style="padding: 0.15rem 0.5rem; font-size: 0.75rem;">${game.Name}</div>
+            <div class="col-id text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;"><span class="text-selectable">${game.ID}</span></div>
+            <div class="col-name border-end border-dark-custom" style="padding: 0.15rem 0.5rem; font-size: 0.75rem;"><span class="text-selectable">${game.Name}</span></div>
             <div class="col-type text-center border-end border-dark-custom" style="padding: 0.15rem 0.5rem; white-space: nowrap; font-size: 0.75rem;">${game.Type}</div>
         `;
         
@@ -878,6 +878,12 @@ function addRowClickHandlers() {
         row.addEventListener('click', function(e) {
             // Don't toggle if clicking directly on checkbox or priority input
             if (e.target.type === 'checkbox' || e.target.type === 'number') return;
+            
+            // Don't toggle if clicking on ID column (entire column is text-selectable)
+            if (e.target.closest('.col-id')) return;
+            
+            // Don't toggle if clicking on text-selectable spans in Name column
+            if (e.target.classList.contains('text-selectable')) return;
             
             const gameId = this.getAttribute('data-game-id');
             const checkbox = this.querySelector(`[data-game-id="${gameId}"]`);
