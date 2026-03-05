@@ -45,10 +45,14 @@ GUMA is a lightweight Steam App List helper that focuses on **speed**, **bulk wo
 ## Key Features
 
 ### 🧩 Pinned Side Panel workspace
-- Pin GUMA into your browser **Side Panel** for a larger, persistent UI.
-- Remembers whether the window is pinned (`windowPinned`).
+**Floating Action Menu**
+**_by supported browser btw_**
+- Open in New Window
+- Open in New Tab
+- Open in Side Panel (pin)
 <p align="center">
-<img width="1178" alt="image" src="https://github.com/user-attachments/assets/772e6ec9-7e76-4458-b8bc-683401ec25af" />
+	<img width="1119" height="975" alt="image" src="https://github.com/user-attachments/assets/629c1ea2-41e2-4b28-95c6-79a0abc30ff7" />
+
 </p>
 
 
