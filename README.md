@@ -7,12 +7,12 @@
 	<em> Be one of these! </em>
 </p>
 <p align="center">
-  <a href="https://github.com/achrllrogia45/Reaparr/"><img src="https://img.shields.io/github/stars/achrllrogia45/greenluma-manager-extension?style=social"></a>
+  <a href="https://github.com/achrllrogia45/greenluma-manager-extension/"><img src="https://img.shields.io/github/stars/achrllrogia45/greenluma-manager-extension?style=social"></a>
   <a href="https://github.com/achrllrogia45/"><img src="https://img.shields.io/github/followers/achrllrogia45?style=social"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/achrllrogia45/greenluma-manager-extension/releases/tag/release"><strong>Download (Releases)</strong></a>
+  <a href="https://github.com/achrllrogia45/greenluma-manager-extension/releases/"><strong>Download (Releases)</strong></a>
   ·
   <a href="https://github.com/achrllrogia45/greenluma-manager-extension/">Repository</a>
 </p>
