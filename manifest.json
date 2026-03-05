@@ -1,14 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "GUMA",
-  "version": "1.0.0",
+  "name": "G.U.M.A",
+  "version": "2.1.0",
   "description": "A browser extension for managing GreenLuma AppList.",
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "action": {
     "default_popup": "index.html",
-    "default_title": "GUMA"
+    "default_title": "G.U.M.A"
   },
   "side_panel": {
     "default_path": "index.html"
@@ -31,7 +31,7 @@
   "content_scripts": [],
   "web_accessible_resources": [
     {
-      "resources": ["main.js", "styles.css","popup.css", "search.js", "app-sort.js", "utils.js", "generator.js"],
+      "resources": ["main.js", "styles.css","popup.css", "search.js", "app-sort.js", "utils.js", "generator.js", "bootstrap.bundle.min.js"],
       "matches": ["<all_urls>"]
     }
   ]

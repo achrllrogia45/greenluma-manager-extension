@@ -1871,6 +1871,45 @@ function initializeHorizontalPanelResize() {
         getAppSection.style.minHeight = '250px';
     }
     
+    // Function to adjust panel size when container resizes
+    function adjustPanelToContainer() {
+        const parentContainer = getAppSection.parentElement;
+        if (!parentContainer) return;
+        
+        const parentRect = parentContainer.getBoundingClientRect();
+        const availableHeight = parentRect.height;
+        const appRect = getAppSection.getBoundingClientRect();
+        const currentAppHeight = appRect.height;
+        
+        // Apply constraints - minimum 150px, maximum 80% of container
+        const minHeight = 150;
+        const maxAppHeight = availableHeight * 0.8;
+        
+        // If current height exceeds max, adjust it
+        if (currentAppHeight > maxAppHeight) {
+            const constrainedHeight = Math.max(minHeight, maxAppHeight);
+            getAppSection.style.height = `${constrainedHeight}px`;
+            getAppSection.style.minHeight = `${constrainedHeight}px`;
+            console.log(`Adjusted panel height to ${constrainedHeight}px (container: ${availableHeight}px)`);
+        }
+    }
+    
+    // Create ResizeObserver to watch for container size changes
+    const parentContainer = getAppSection.parentElement;
+    if (parentContainer && typeof ResizeObserver !== 'undefined') {
+        const resizeObserver = new ResizeObserver(() => {
+            // Debounce the adjustment to avoid excessive updates
+            if (!isResizing) {
+                adjustPanelToContainer();
+            }
+        });
+        resizeObserver.observe(parentContainer);
+        console.log("ResizeObserver attached to parent container");
+    }
+    
+    // Initial adjustment
+    setTimeout(adjustPanelToContainer, 100);
+    
     resizer.addEventListener('mousedown', function(e) {
         e.preventDefault();
         isResizing = true;
@@ -2065,16 +2104,56 @@ function clearSelectedGames() {
     showNotification(`Removed ${removedCount} games`, 'success');
 }
 
-// Pin Button Functionality
+// Floating Action Menu Functionality
 document.addEventListener('DOMContentLoaded', function() {
+    const floatingActionMenu = document.getElementById('floatingActionMenu');
+    const floatingToggleBtn = document.getElementById('floatingToggleBtn');
+    const floatingToggleIcon = document.getElementById('floatingToggleIcon');
+    const openTabBtn = document.getElementById('openTabBtn');
     const pinBtn = document.getElementById('pinBtn');
-    
-    if (!pinBtn) return;
 
-    // Open side panel on click
-    pinBtn.addEventListener('click', async function() {
-        await openSidePanel();
+    if (!floatingToggleBtn || !floatingActionMenu) return;
+
+    // Toggle menu open/closed
+    floatingToggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = floatingActionMenu.classList.toggle('open');
+        floatingToggleIcon.className = isOpen
+            ? 'bi bi-caret-down-square-fill'
+            : 'bi bi-caret-up-square-fill';
     });
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!floatingActionMenu.contains(e.target)) {
+            floatingActionMenu.classList.remove('open');
+            floatingToggleIcon.className = 'bi bi-caret-up-square-fill';
+        }
+    });
+
+    // Open in New Window
+    const openWindowBtn = document.getElementById('openWindowBtn');
+    if (openWindowBtn) {
+        openWindowBtn.addEventListener('click', function() {
+            const url = chrome.runtime.getURL('index.html');
+            chrome.windows.create({ url, type: 'popup', width: 400, height: 800 });
+        });
+    }
+
+    // Open in New Tab
+    if (openTabBtn) {
+        openTabBtn.addEventListener('click', function() {
+            const url = chrome.runtime.getURL('index.html');
+            chrome.tabs.create({ url });
+        });
+    }
+
+    // Open Side Panel
+    if (pinBtn) {
+        pinBtn.addEventListener('click', async function() {
+            await openSidePanel();
+        });
+    }
 });
 
 // Function to open side panel
